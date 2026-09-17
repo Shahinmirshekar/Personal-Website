@@ -10,8 +10,25 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 const layout = computeSkillLayout();
 const byId = new Map(layout.map((s) => [s.id, s]));
 
-const VIEWBOX = { minX: -120, minY: -120, width: 440, height: 440 };
+// Sized to the actual node layout (plus room for the longest labels, hit
+// targets, and hover/float motion) rather than a fixed box — the four
+// clusters don't fill a full square, and a fixed viewBox left large empty
+// margins above/below the graph inside its aspect-square container.
+const VIEWBOX = (() => {
+  const PADDING = 30;
+  const xs = layout.map((s) => s.x);
+  const ys = layout.map((s) => s.y);
+  const minX = Math.min(...xs) - PADDING;
+  const minY = Math.min(...ys) - PADDING;
+  return {
+    minX,
+    minY,
+    width: Math.max(...xs) - minX + PADDING,
+    height: Math.max(...ys) - minY + PADDING,
+  };
+})();
 const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + VIEWBOX.height / 2 };
+const VIEWBOX_ASPECT_RATIO = VIEWBOX.width / VIEWBOX.height;
 // A `transform: translateX()` set on an element inside the SVG is in that
 // element's *local* user-coordinate space, not real screen pixels — it gets
 // scaled up again by however much the viewBox is stretched to fill the
@@ -292,7 +309,7 @@ export function SkillConstellation() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4">
         {(Object.keys(GROUP_LABEL) as (keyof typeof GROUP_LABEL)[]).map((group) => (
           <div key={group} className="flex items-center gap-2 text-xs text-warm-gray">
             <span
@@ -305,12 +322,39 @@ export function SkillConstellation() {
         ))}
       </div>
 
+      {/* Leads with the interaction hint (or the live "connects to" result)
+          instead of burying it below the graph, so it's visible before
+          anyone has to scroll through the whole constellation to find it. */}
+      <div className="mx-auto mt-4 max-w-xl text-center">
+        {selected ? (
+          <p className="text-sm text-light-gray">
+            <span className="font-medium text-soft-white">{selected.label}</span> connects to{" "}
+            {Array.from(neighborIds)
+              .filter((id) => id !== selected.id)
+              .map((id) => byId.get(id)?.label)
+              .filter(Boolean)
+              .join(", ")}
+            .
+          </p>
+        ) : (
+          <p className="text-sm text-warm-gray">
+            Select any skill to see how it connects across disciplines.
+          </p>
+        )}
+      </div>
+
       {/* Full-bleed breakout: as wide as the viewport allows, ignoring the
-          page's usual max-w-6xl content column (capped so it doesn't become
-          absurdly tall — aspect-square ties height to width — on ultrawide
-          monitors). */}
+          page's usual max-w-6xl content column. Height follows the graph's
+          own aspect ratio (computed from the actual node layout above)
+          rather than a fixed square, so there's no dead space above/below
+          the clusters. The graph's footprint is close to square, so at full
+          viewport width that ratio alone would still make the section
+          nearly as tall as the screen — max-height keeps it from dominating
+          the page; the SVG just centers with a little unused width on very
+          wide screens rather than stretching taller to compensate. */}
       <motion.div
-        className="relative left-1/2 aspect-square w-screen max-w-[1600px] -translate-x-1/2 px-4 sm:px-8"
+        className="relative left-1/2 w-screen max-w-[1600px] -translate-x-1/2 px-4 sm:px-8"
+        style={{ aspectRatio: VIEWBOX_ASPECT_RATIO, maxHeight: "min(760px, 80vh)" }}
         initial="hidden"
         whileInView="visible"
         viewport={revealViewport}
@@ -366,24 +410,6 @@ export function SkillConstellation() {
           })}
         </svg>
       </motion.div>
-
-      <div className="mx-auto mt-6 max-w-xl text-center">
-        {selected ? (
-          <p className="text-sm text-light-gray">
-            <span className="font-medium text-soft-white">{selected.label}</span> connects to{" "}
-            {Array.from(neighborIds)
-              .filter((id) => id !== selected.id)
-              .map((id) => byId.get(id)?.label)
-              .filter(Boolean)
-              .join(", ")}
-            .
-          </p>
-        ) : (
-          <p className="text-sm text-warm-gray">
-            Select any skill to see how it connects across disciplines.
-          </p>
-        )}
-      </div>
     </div>
   );
 }
