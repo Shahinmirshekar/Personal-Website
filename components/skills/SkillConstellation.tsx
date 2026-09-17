@@ -16,8 +16,8 @@ const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + 
 // unit of cursor offset from center — small and capped, since this is a
 // shared full-graph parallax rather than a per-node effect (see README:
 // a per-node "flee the cursor" version made nodes unclickable).
-const PARALLAX_STRENGTH = 0.1;
-const PARALLAX_MAX = 22;
+const PARALLAX_STRENGTH = 0.06;
+const PARALLAX_MAX = 12;
 // Off-canvas sentinel so the parallax settles back to 0 when idle.
 const IDLE = 9999;
 
@@ -141,7 +141,7 @@ export function SkillConstellation() {
                 <g
                   key={skill.id}
                   transform={`translate(${skill.x} ${skill.y})`}
-                  className="cursor-pointer"
+                  className="skill-node cursor-pointer"
                   onClick={() => setSelectedId(isSelected ? null : skill.id)}
                   tabIndex={0}
                   role="button"

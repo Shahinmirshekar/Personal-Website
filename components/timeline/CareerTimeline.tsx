@@ -23,6 +23,21 @@ export function CareerTimeline() {
   const [activeChapter, setActiveChapter] = useState<ChapterId>(timeline[0].chapter);
   const [trackHeight, setTrackHeight] = useState(0);
   const [markerYs, setMarkerYs] = useState<number[]>([]);
+  const [inView, setInView] = useState(false);
+
+  // The nav is `position: fixed`, so without this it would stay mounted and
+  // interactive (blocking clicks under it) for the rest of the page after
+  // scrolling past the timeline — e.g. it was overlapping the skill
+  // constellation's full-bleed graph further down the page.
+  useEffect(() => {
+    const node = trackRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      rootMargin: "0px",
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const node = trackRef.current;
@@ -90,7 +105,7 @@ export function CareerTimeline() {
 
   return (
     <>
-      <CareerProgressNav activeChapter={activeChapter} onSelect={scrollToChapter} />
+      {inView && <CareerProgressNav activeChapter={activeChapter} onSelect={scrollToChapter} />}
       <Section
         id="timeline"
         chapterAnchor
