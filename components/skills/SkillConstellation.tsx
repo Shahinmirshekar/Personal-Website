@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { animate, motion, motionValue, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { skills } from "@/content/skills";
 import { computeSkillLayout, GROUP_COLOR, GROUP_LABEL, type PositionedSkill } from "@/lib/skill-layout";
 import { revealViewport } from "@/lib/motion";
@@ -22,6 +22,18 @@ const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + 
 // factor keeps the on-screen movement the same size regardless of viewport
 // width.
 const HOVER_LIFT_PX = 8;
+// A gentle, perpetual drift so the constellation feels alive even when
+// nobody's touching it — small enough (well under the hover lift, and a
+// fraction of the hit-target radius) that it never affects click accuracy.
+const FLOAT_AMPLITUDE = 1.6;
+
+/** Tiny deterministic hash so each node's float cycle is out of phase with
+ * its neighbors (otherwise the whole graph would visibly pulse in unison). */
+function hashSeed(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return hash;
+}
 
 const edges = (() => {
   const seen = new Set<string>();
@@ -37,6 +49,11 @@ const edges = (() => {
   return list;
 })();
 
+interface FloatValue {
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+}
+
 interface EdgeProps {
   a: string;
   b: string;
@@ -45,6 +62,8 @@ interface EdgeProps {
   hoveredId: string | null;
   hoverOffsetX: MotionValue<number>;
   hoverOffsetY: MotionValue<number>;
+  floatA: FloatValue;
+  floatB: FloatValue;
   isHighlighted: boolean;
   isDimmed: boolean;
 }
@@ -52,12 +71,14 @@ interface EdgeProps {
 /** Its own component (not inlined in a .map) because it needs its own
  * useTransform hooks — whichever endpoint is the currently-hovered node
  * reads the shared hover offset, so the line stays visually attached to the
- * dot as it lifts, and settles back with it on the same spring. */
-function ConstellationEdge({ a, b, pa, pb, hoveredId, hoverOffsetX, hoverOffsetY, isHighlighted, isDimmed }: EdgeProps) {
-  const x1 = useTransform(hoverOffsetX, (ox) => (a === hoveredId ? pa.x + ox : pa.x));
-  const y1 = useTransform(hoverOffsetY, (oy) => (a === hoveredId ? pa.y + oy : pa.y));
-  const x2 = useTransform(hoverOffsetX, (ox) => (b === hoveredId ? pb.x + ox : pb.x));
-  const y2 = useTransform(hoverOffsetY, (oy) => (b === hoveredId ? pb.y + oy : pb.y));
+ * dot as it lifts, and settles back with it on the same spring. Each
+ * endpoint also tracks its own node's idle float, so the line stays
+ * attached to both dots as they drift. */
+function ConstellationEdge({ a, b, pa, pb, hoveredId, hoverOffsetX, hoverOffsetY, floatA, floatB, isHighlighted, isDimmed }: EdgeProps) {
+  const x1 = useTransform([hoverOffsetX, floatA.x], ([ox, fx]: number[]) => pa.x + (a === hoveredId ? ox : 0) + fx);
+  const y1 = useTransform([hoverOffsetY, floatA.y], ([oy, fy]: number[]) => pa.y + (a === hoveredId ? oy : 0) + fy);
+  const x2 = useTransform([hoverOffsetX, floatB.x], ([ox, fx]: number[]) => pb.x + (b === hoveredId ? ox : 0) + fx);
+  const y2 = useTransform([hoverOffsetY, floatB.y], ([oy, fy]: number[]) => pb.y + (b === hoveredId ? oy : 0) + fy);
 
   return (
     <motion.line
@@ -79,6 +100,7 @@ interface NodeProps {
   isHovered: boolean;
   hoverOffsetX: MotionValue<number>;
   hoverOffsetY: MotionValue<number>;
+  float: FloatValue;
   onSelect: () => void;
   onEnter: () => void;
   onLeave: () => void;
@@ -89,10 +111,11 @@ interface NodeProps {
  * completely replaces a plain SVG `transform="translate(...)"` attribute
  * rather than composing with it — so the node's base position has to be
  * folded into the same style-driven transform, which needs its own
- * useTransform hook per node. */
-function ConstellationNode({ skill, isSelected, isDimmed, isHovered, hoverOffsetX, hoverOffsetY, onSelect, onEnter, onLeave }: NodeProps) {
-  const translateX = useTransform(hoverOffsetX, (ox) => skill.x + (isHovered ? ox : 0));
-  const translateY = useTransform(hoverOffsetY, (oy) => skill.y + (isHovered ? oy : 0));
+ * useTransform hook per node. Its idle float offset is folded in the same
+ * way, for the same reason. */
+function ConstellationNode({ skill, isSelected, isDimmed, isHovered, hoverOffsetX, hoverOffsetY, float, onSelect, onEnter, onLeave }: NodeProps) {
+  const translateX = useTransform([hoverOffsetX, float.x], ([ox, fx]: number[]) => skill.x + (isHovered ? ox : 0) + fx);
+  const translateY = useTransform([hoverOffsetY, float.y], ([oy, fy]: number[]) => skill.y + (isHovered ? oy : 0) + fy);
 
   return (
     <motion.g
@@ -166,6 +189,40 @@ export function SkillConstellation() {
   const rawHoverY = useMotionValue(0);
   const hoverOffsetX = useSpring(rawHoverX, { stiffness: 300, damping: 22, mass: 0.4 });
   const hoverOffsetY = useSpring(rawHoverY, { stiffness: 300, damping: 22, mass: 0.4 });
+
+  // Plain `motionValue()` (not the `useMotionValue` hook) since these are
+  // created in bulk inside useMemo, where hooks can't be called — the
+  // useMemo's empty deps array still gives each one a stable identity
+  // across re-renders, same as a hook would.
+  const floatValues = useMemo(() => {
+    const map = new Map<string, FloatValue>();
+    layout.forEach((skill) => map.set(skill.id, { x: motionValue(0), y: motionValue(0) }));
+    return map;
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    const controls = layout.flatMap((skill) => {
+      const { x, y } = floatValues.get(skill.id)!;
+      const seed = hashSeed(skill.id);
+      const delay = (seed % 17) / 10; // stagger so nodes don't drift in unison
+      return [
+        animate(y, [0, -FLOAT_AMPLITUDE, 0, FLOAT_AMPLITUDE * 0.5, 0], {
+          duration: 4.2 + (seed % 11) / 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay,
+        }),
+        animate(x, [0, FLOAT_AMPLITUDE * 0.7, 0, -FLOAT_AMPLITUDE * 0.5, 0], {
+          duration: 5.1 + (seed % 7) / 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: delay * 0.6,
+        }),
+      ];
+    });
+    return () => controls.forEach((c) => c.stop());
+  }, [reducedMotion, floatValues]);
 
   const neighborIds = useMemo(() => {
     if (!selectedId) return new Set<string>();
@@ -247,6 +304,8 @@ export function SkillConstellation() {
                 hoveredId={hoveredId}
                 hoverOffsetX={hoverOffsetX}
                 hoverOffsetY={hoverOffsetY}
+                floatA={floatValues.get(a)!}
+                floatB={floatValues.get(b)!}
                 isHighlighted={isHighlighted}
                 isDimmed={isDimmed}
               />
@@ -265,6 +324,7 @@ export function SkillConstellation() {
                 isHovered={skill.id === hoveredId}
                 hoverOffsetX={hoverOffsetX}
                 hoverOffsetY={hoverOffsetY}
+                float={floatValues.get(skill.id)!}
                 onSelect={() => setSelectedId(isSelected ? null : skill.id)}
                 onEnter={() => handleEnter(skill)}
                 onLeave={handleLeave}
