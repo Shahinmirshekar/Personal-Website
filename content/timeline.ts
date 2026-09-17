@@ -9,8 +9,8 @@ const allChapters: { id: ChapterId; label: string }[] = [
   { id: "united-states", label: "United States" },
   { id: "graduate-studies", label: "Graduate Studies" },
   { id: "advanced-analytics", label: "Advanced Analytics" },
+  { id: "commercial-strategy", label: "Commercial Strategy" },
   { id: "leadership", label: "Leadership" },
-  { id: "whats-next", label: "What's Next" },
 ];
 
 // The "Leadership" chapter is Khooneh's — see content/khooneh.ts's
@@ -21,11 +21,9 @@ export const chapters = KHOONEH_VISIBLE
 
 /**
  * Career timeline data, sourced from Shahin's resume and the Khooneh/Asentech
- * facts confirmed directly. The "moving to the U.S." date is not stated
- * anywhere in the source material — it's inferred from the gap between the
- * Tehran roles ending June 2021 and graduate study starting in Pittsburgh
- * that August, and is labeled as an inference rather than presented as a
- * confirmed date. Nothing else here is invented.
+ * facts confirmed directly. No date is shown for the U.S. move (privacy —
+ * see README); the Asentech end date and the Commercial Analytics start
+ * date are the only inferred/assumption-flagged fields — see their comments.
  */
 const allMilestones: TimelineMilestone[] = [
   {
@@ -146,7 +144,9 @@ const allMilestones: TimelineMilestone[] = [
     id: "asentech-analyst",
     chapter: "advanced-analytics",
     era: "us",
-    dateLabel: "Since July 20, 2023",
+    // Closed out at the Commercial Analytics role's October 2026 start —
+    // flagged to Shahin as an assumption; correct if the actual end date differs.
+    dateLabel: "July 2023 – October 2026",
     title: "Data & Insights Analyst — Asentech",
     organization: "Asentech LLC, Somerville, NJ",
     summary:
@@ -159,6 +159,33 @@ const allMilestones: TimelineMilestone[] = [
       "Partnered with data engineers to automate end-to-end ETL pipelines in SQL and Python, cutting report-generation time by 70%",
     ],
     visual: "dashboard",
+  },
+  {
+    id: "commercial-analytics-manager",
+    chapter: "commercial-strategy",
+    era: "us",
+    dateLabel: "October 2026 – Present · Remote",
+    title: "Manager, Commercial Analytics",
+    organization: "Commercial Operations",
+    summary:
+      "Leading commercial analytics that transforms complex sales, customer, and market data into focused strategies for improving performance, allocating resources, and uncovering growth opportunities.",
+    detailParagraph:
+      "I partner with commercial leadership and cross-functional teams to advance sales-force effectiveness, territory strategy, customer segmentation and targeting, performance measurement, and go-to-market decision-making.",
+    isTurningPoint: true,
+    visual: "network",
+    convergence: {
+      streams: [
+        "Sales Performance",
+        "Territory Structure",
+        "Customer Segments",
+        "CRM Activity",
+        "Market Data",
+        "Incentive Performance",
+      ],
+      system: "Commercial Analytics System",
+      outcomes: ["Focus", "Growth", "Commercial Impact"],
+      closingStatement: "From Insight to Commercial Impact.",
+    },
   },
   {
     id: "khooneh-leadership",
@@ -175,17 +202,10 @@ const allMilestones: TimelineMilestone[] = [
     ],
     visual: "network",
   },
-  {
-    id: "whats-next",
-    chapter: "whats-next",
-    era: "us",
-    dateLabel: "Now",
-    title: "Currently: analytics, strategy, technology, design, and leadership",
-    summary:
-      "The next chapter should be built around meaningful problems — ones that need analytical rigor, visual clarity, business judgment, and real curiosity about people.",
-    visual: "horizon",
-  },
 ];
+// No trailing "What's Next" chapter/milestone by design — the timeline ends
+// on the current role above, with a subtle visual continuation (no label)
+// rendered directly in CareerTimeline.tsx.
 
 export const timeline = KHOONEH_VISIBLE
   ? allMilestones

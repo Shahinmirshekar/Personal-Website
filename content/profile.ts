@@ -1,6 +1,6 @@
 export const profile = {
   name: "Shahin Mirshekari",
-  currentTitle: "Data & Insights Analyst",
+  currentTitle: "Manager, Commercial Analytics",
   heroKicker: "Design × Marketing × Analytics",
   heroSummary:
     "I find the story inside complexity. Design taught me how people see. Marketing taught me why people act. Statistics taught me how to test what is true. Today, I bring all three together to transform complex information into decisions, products, and experiences people can understand.",
@@ -17,7 +17,7 @@ export const profile = {
   ],
   /** Rotating identity roles shown in the hero, resolving into heroKicker. */
   identityRoles: [
-    "Data & Insights Analyst",
+    "Manager, Commercial Analytics",
     "Marketing Analytics Strategist",
     "Visual Storyteller",
     "Dashboard Designer",

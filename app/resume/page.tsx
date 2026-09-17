@@ -22,6 +22,7 @@ const byId = new Map(timeline.map((m) => [m.id, m]));
 // for scrolling, not for a résumé.
 const EDUCATION_ORDER = ["katz-ms", "design-inverse", "foundation-engineering"];
 const EXPERIENCE_ORDER = [
+  "commercial-analytics-manager",
   "asentech-analyst",
   "pitt-consultant",
   "ppg-intern",
@@ -81,6 +82,9 @@ export default function ResumePage() {
                 </p>
                 <p className="whitespace-nowrap text-sm text-charcoal/60">{m.dateLabel}</p>
               </div>
+              {m.detailParagraph && (
+                <p className="mt-1.5 text-sm text-charcoal/80">{m.detailParagraph}</p>
+              )}
               {m.details && m.details.length > 0 && (
                 <ul className="mt-1.5 list-disc pl-5 text-sm text-charcoal/80">
                   {m.details.map((d) => (
@@ -103,6 +107,9 @@ export default function ResumePage() {
                 </p>
                 <p className="whitespace-nowrap text-sm text-charcoal/60">{m.dateLabel}</p>
               </div>
+              {m.detailParagraph && (
+                <p className="mt-1.5 text-sm text-charcoal/80">{m.detailParagraph}</p>
+              )}
               {m.details && m.details.length > 0 && (
                 <ul className="mt-1.5 list-disc pl-5 text-sm text-charcoal/80">
                   {m.details.map((d) => (

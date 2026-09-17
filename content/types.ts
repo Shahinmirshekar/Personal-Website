@@ -12,8 +12,8 @@ export type ChapterId =
   | "united-states"
   | "graduate-studies"
   | "advanced-analytics"
-  | "leadership"
-  | "whats-next";
+  | "commercial-strategy"
+  | "leadership";
 
 export interface TimelineMilestone {
   id: string;
@@ -23,6 +23,9 @@ export interface TimelineMilestone {
   dateLabel: string;
   title: string;
   summary: string;
+  /** An optional second flowing paragraph, distinct from the bulleted
+   * `details` list, for milestones that read better as prose than bullets. */
+  detailParagraph?: string;
   details?: string[];
   /** True when dateLabel/title/details contain unverified placeholder content. */
   isPlaceholder?: boolean;
@@ -44,6 +47,15 @@ export interface TimelineMilestone {
   /** Employer or school name, kept separate from the narrative title so the
    * /resume view can render conventional "Title — Organization" headings. */
   organization?: string;
+  /** Present-position showcase: multiple input streams converging into a
+   * system that produces the listed outcomes, plus a closing statement.
+   * Rendered by MilestoneConvergence for milestones that set this. */
+  convergence?: {
+    streams: string[];
+    system: string;
+    outcomes: string[];
+    closingStatement: string;
+  };
 }
 
 export interface SkillItem {

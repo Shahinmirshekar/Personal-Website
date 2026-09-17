@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { TimelineMilestone as Milestone } from "@/content/types";
 import { MilestoneMotif } from "./MilestoneMotif";
+import { MilestoneConvergence } from "./MilestoneConvergence";
 import { PlaceholderBadge } from "@/components/ui/PlaceholderBadge";
 import { editorialEase } from "@/lib/motion";
 
@@ -37,6 +38,7 @@ export function TimelineMilestone({ milestone, side, onEnter }: Props) {
       {/* Marker column */}
       <div className="col-start-1 row-start-1 flex justify-center md:col-start-2">
         <motion.span
+          data-marker-id={milestone.id}
           className={`relative z-10 mt-1.5 flex h-4 w-4 items-center justify-center rounded-full ${dotColor} ring-4 ring-charcoal`}
           initial={{ scale: 0.4, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
@@ -90,6 +92,21 @@ export function TimelineMilestone({ milestone, side, onEnter }: Props) {
           <p className="mt-3 text-pretty text-sm leading-relaxed text-light-gray sm:text-base">
             {milestone.summary}
           </p>
+
+          {milestone.detailParagraph && (
+            <p className="mt-3 text-pretty text-sm leading-relaxed text-light-gray sm:text-base">
+              {milestone.detailParagraph}
+            </p>
+          )}
+
+          {milestone.convergence && (
+            <MilestoneConvergence
+              streams={milestone.convergence.streams}
+              system={milestone.convergence.system}
+              outcomes={milestone.convergence.outcomes}
+              closingStatement={milestone.convergence.closingStatement}
+            />
+          )}
 
           {milestone.details && milestone.details.length > 0 && (
             <ul
