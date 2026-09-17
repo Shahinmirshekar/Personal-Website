@@ -74,9 +74,11 @@ export function TimelineMilestone({ milestone, side, onEnter }: Props) {
             >
               {milestone.visual && <MilestoneMotif visual={milestone.visual} />}
             </span>
-            <p className="font-data text-xs uppercase tracking-[0.15em] text-warm-gray">
-              {milestone.dateLabel}
-            </p>
+            {milestone.dateLabel && (
+              <p className="font-data text-xs uppercase tracking-[0.15em] text-warm-gray">
+                {milestone.dateLabel}
+              </p>
+            )}
           </div>
 
           <h3 className="font-display text-xl font-medium leading-snug text-soft-white sm:text-2xl">

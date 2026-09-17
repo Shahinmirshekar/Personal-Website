@@ -84,10 +84,11 @@ export const timeline: TimelineMilestone[] = [
     id: "moving-to-us",
     chapter: "united-states",
     era: "transition",
-    dateLabel: "Summer 2021 (inferred)",
+    // No date shown here by design — see README "Privacy note".
+    dateLabel: "",
     title: "Moving to the United States",
     summary:
-      "A new country. A broader perspective. A more integrated career. (Immigration-status details are intentionally kept off this public page. This date isn't stated outright — it's inferred from the gap between the Tehran roles ending in June 2021 and graduate study starting in Pittsburgh that August.)",
+      "A new country. A broader perspective. A journey that began in Pittsburgh, driven by ambition, shaped by opportunity, and inspired by the pursuit of bigger dreams and broader horizons...",
     isTurningPoint: true,
     visual: "bridge",
   },
