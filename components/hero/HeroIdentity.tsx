@@ -23,14 +23,14 @@ export function HeroIdentity() {
       id="hero"
       className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden border-b border-charcoal-surface bg-charcoal"
     >
-      {/* Summit photo, kept to the right so it sits behind the left-aligned
-          copy rather than under it — same image as the closing section, for
-          a "starts and ends on the same horizon" bookend. Darkened and
-          cooled (a royal-blue multiply pass) rather than left at full color
-          so its sunset doesn't fight the palette, and faded on every edge
-          (not just a rectangle crop) so it reads as part of the background
-          rather than a pasted-in image. */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-full sm:w-3/4 lg:w-1/2" aria-hidden="true">
+      {/* Summit photo. On desktop it's a narrow panel kept to the right,
+          behind the left-aligned copy, faded into the text column — same
+          image as the closing section, for a "starts and ends on the same
+          horizon" bookend. Below that, text runs closer to full width, so
+          instead of the same narrow column (which left a fragile partial-
+          width edge for the fade to line up against) the photo goes full
+          bleed with a flatter, stronger scrim over the whole thing. */}
+      <div className="pointer-events-none absolute inset-0 lg:left-auto lg:w-1/2" aria-hidden="true">
         <Image
           src="/images/closing-summit.png"
           alt=""
@@ -40,17 +40,25 @@ export function HeroIdentity() {
           className="object-cover object-[50%_55%]"
         />
         <div className="absolute inset-0 bg-royal-950/25 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/20 to-transparent" />
+        <div className="absolute inset-0 bg-charcoal/55 lg:hidden" />
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-charcoal via-charcoal/20 to-transparent lg:block" />
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/20 via-transparent to-transparent" />
       </div>
 
-      {/* This used to fade all the way to solid charcoal by the bottom of
-          the section — fine when there was only the canvas underneath, but
-          it was crushing the new photo's bottom half to black. Kept as a
-          much lighter vignette so it still grounds the canvas without
-          hiding the image. */}
+      {/* Light vignette across the whole section — grounds the canvas a
+          little without hiding the photo underneath (an earlier, heavier
+          version faded all the way to solid charcoal by the bottom edge and
+          was crushing the entire lower half of the image). */}
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-royal-950/40 via-charcoal/25 to-charcoal/10"
+        aria-hidden="true"
+      />
+      {/* The actual bottom-edge transition into the next section: stays out
+          of the way for most of the photo, then melts into the page
+          background over the last stretch so the section ends on solid
+          charcoal instead of a hard image-to-image cut. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-charcoal sm:h-64"
         aria-hidden="true"
       />
       <GenerativeCanvas progress={progress} />
