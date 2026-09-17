@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { profile } from "@/content/profile";
 import { contactLinks } from "@/content/contact";
@@ -8,9 +9,28 @@ import { fadeUp, revealViewport, staggerChildren } from "@/lib/motion";
 
 export function ContactChapter() {
   return (
-    <section id="contact" className="scroll-mt-24 border-t border-charcoal-surface bg-charcoal">
+    <section id="contact" className="relative scroll-mt-24 overflow-hidden border-t border-charcoal-surface bg-charcoal">
+      {/* Closing image: a wide, warm horizon, but darkened and cooled to sit
+          in the same palette as the rest of the site rather than clashing
+          with it — a heavy scrim for legibility, a royal-blue multiply pass
+          to pull the warm sunset toward the site's blue/crimson duotone, and
+          a top fade so the previous section eases into it instead of
+          cutting off sharply. */}
+      <div className="absolute inset-0" aria-hidden="true">
+        <Image
+          src="/images/closing-summit.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-[50%_60%]"
+        />
+        <div className="absolute inset-0 bg-royal-950/50 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal via-charcoal/55 to-charcoal" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent" />
+      </div>
+
       <motion.div
-        className="mx-auto max-w-4xl px-6 py-28 text-center sm:px-8 md:py-36"
+        className="relative mx-auto max-w-4xl px-6 py-28 text-center sm:px-8 md:py-36"
         initial="hidden"
         whileInView="visible"
         viewport={revealViewport}

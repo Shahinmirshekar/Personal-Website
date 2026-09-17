@@ -17,6 +17,19 @@ const GROUP_DIRECTION: Record<SkillItem["group"], { x: number; y: number }> = {
   design: { x: 0, y: 1 },
   leadership: { x: -1, y: 0 },
 };
+// Design & Storytelling and Leadership & Execution have the same skill
+// count, so the shared distance formula alone would place them equally far
+// out — but a straight-down arm reads as much longer than a sideways one on
+// a page that's meant to be scrolled, not scanned side to side. Pulling the
+// bottom arm in specifically keeps the four-cluster "diamond" from reading
+// as one long tail hanging off the bottom. Analytics (by far the largest
+// group) is pulled in too, so its arm doesn't dominate the other three.
+const GROUP_DISTANCE_SCALE: Record<SkillItem["group"], number> = {
+  analytics: 0.78,
+  marketing: 1,
+  design: 0.72,
+  leadership: 1,
+};
 
 export const GROUP_COLOR: Record<SkillItem["group"], string> = {
   analytics: "#4d6fce",
@@ -46,7 +59,7 @@ export function computeSkillLayout(): PositionedSkill[] {
     const count = counts[skill.group];
     // Bigger groups sit further from the shared center AND get a wider ring
     // of their own, so a 18-skill cluster doesn't crowd into an 8-skill one.
-    const distance = 84 + count * 3.6;
+    const distance = (84 + count * 3.6) * GROUP_DISTANCE_SCALE[skill.group];
     const direction = GROUP_DIRECTION[skill.group];
     const center = { x: CENTER.x + direction.x * distance, y: CENTER.y + direction.y * distance };
     const i = seen[skill.group] ?? 0;

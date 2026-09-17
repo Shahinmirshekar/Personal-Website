@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { GenerativeCanvas } from "./GenerativeCanvas";
 import { IdentityRotator } from "./IdentityRotator";
@@ -22,6 +23,25 @@ export function HeroIdentity() {
       id="hero"
       className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden border-b border-charcoal-surface bg-charcoal"
     >
+      {/* Portrait, kept to the right so it sits behind the left-aligned copy
+          rather than under it. Blended rather than dropped in flat: a
+          royal-blue color-blend duotones the grayscale photo to match the
+          palette, and fades on every edge (not just a rectangle crop) so it
+          reads as part of the background rather than a pasted-in image. */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-full sm:w-3/4 lg:w-1/2" aria-hidden="true">
+        <Image
+          src="/images/hero-portrait.png"
+          alt=""
+          fill
+          priority
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover object-[68%_35%] opacity-80"
+        />
+        <div className="absolute inset-0 bg-royal-600 mix-blend-color" />
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-transparent to-charcoal" />
+      </div>
+
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-royal-950/40 via-charcoal to-charcoal"
         aria-hidden="true"
