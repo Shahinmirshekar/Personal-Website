@@ -97,6 +97,7 @@ interface NodeProps {
   skill: PositionedSkill;
   isSelected: boolean;
   isDimmed: boolean;
+  isHighlighted: boolean;
   isHovered: boolean;
   hoverOffsetX: MotionValue<number>;
   hoverOffsetY: MotionValue<number>;
@@ -113,9 +114,15 @@ interface NodeProps {
  * folded into the same style-driven transform, which needs its own
  * useTransform hook per node. Its idle float offset is folded in the same
  * way, for the same reason. */
-function ConstellationNode({ skill, isSelected, isDimmed, isHovered, hoverOffsetX, hoverOffsetY, float, onSelect, onEnter, onLeave }: NodeProps) {
+function ConstellationNode({ skill, isSelected, isDimmed, isHighlighted, isHovered, hoverOffsetX, hoverOffsetY, float, onSelect, onEnter, onLeave }: NodeProps) {
   const translateX = useTransform([hoverOffsetX, float.x], ([ox, fx]: number[]) => skill.x + (isHovered ? ox : 0) + fx);
   const translateY = useTransform([hoverOffsetY, float.y], ([oy, fy]: number[]) => skill.y + (isHovered ? oy : 0) + fy);
+  // With ~50 skills on one graph, labels shown all the time overlap badly
+  // no matter how the nodes are spaced — full names are long relative to
+  // how close together nodes have to sit. Showing a label only once it's
+  // actually relevant (hovered, selected, or a neighbor of the selection)
+  // keeps the graph legible at rest and still makes every name discoverable.
+  const showLabel = isHovered || isSelected || isHighlighted;
 
   return (
     <motion.g
@@ -140,20 +147,22 @@ function ConstellationNode({ skill, isSelected, isDimmed, isHovered, hoverOffset
       {/* Generous invisible hit target — the visible dot is only ~3
           viewBox units, too small to click reliably on its own. Moves
           together with the dot (same transform), so this is just normal
-          hit-area padding. */}
-      <circle r={9} fill="transparent" pointerEvents="all" />
+          hit-area padding. Kept modest (not larger) since a bigger radius
+          would overlap neighbors' targets in the denser clusters. */}
+      <circle r={7} fill="transparent" pointerEvents="all" />
       <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
-      <text
-        x={0}
-        y={skill.labelDy * 1.4}
-        textAnchor="middle"
-        className="font-data select-none"
-        fontSize={isSelected ? 5 : 3.9}
-        fill={isDimmed ? "#8a8d95" : "#f6f4ef"}
-        opacity={isDimmed ? 0.35 : 1}
-      >
-        {skill.label}
-      </text>
+      {showLabel && (
+        <text
+          x={0}
+          y={skill.labelDy * 1.4}
+          textAnchor="middle"
+          className="font-data select-none"
+          fontSize={isSelected ? 5 : 3.9}
+          fill="#f6f4ef"
+        >
+          {skill.label}
+        </text>
+      )}
     </motion.g>
   );
 }
@@ -189,6 +198,19 @@ export function SkillConstellation() {
   const rawHoverY = useMotionValue(0);
   const hoverOffsetX = useSpring(rawHoverX, { stiffness: 300, damping: 22, mass: 0.4 });
   const hoverOffsetY = useSpring(rawHoverY, { stiffness: 300, damping: 22, mass: 0.4 });
+  // In the denser clusters, adjacent nodes' invisible hit-targets overlap —
+  // without this, the pointer sitting in that overlap flips which node is
+  // "hovered" every frame as they both idly float, each flip yanking the
+  // hover offset toward a different direction and reading as a fast shake.
+  // Debouncing the commit means a fleeting flicker between two overlapping
+  // targets never actually fires; only a hover that holds still commits.
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
 
   // Plain `motionValue()` (not the `useMotionValue` hook) since these are
   // created in bulk inside useMemo, where hooks can't be called — the
@@ -236,20 +258,28 @@ export function SkillConstellation() {
 
   const handleEnter = (skill: PositionedSkill) => {
     if (reducedMotion) return;
-    setHoveredId(skill.id);
-    // Lift the node outward, away from the graph's center, rather than
-    // toward wherever the cursor happens to have entered — a fixed,
-    // deliberate direction reads as an intentional "pop" instead of jittery
-    // noise tied to exactly where within the hit area the pointer landed.
-    const dx = skill.x - VIEWBOX_CENTER.x;
-    const dy = skill.y - VIEWBOX_CENTER.y;
-    const length = Math.hypot(dx, dy) || 1;
-    const magnitude = HOVER_LIFT_PX / scaleRef.current;
-    rawHoverX.set((dx / length) * magnitude);
-    rawHoverY.set((dy / length) * magnitude);
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredId(skill.id);
+      // Lift the node outward, away from the graph's center, rather than
+      // toward wherever the cursor happens to have entered — a fixed,
+      // deliberate direction reads as an intentional "pop" instead of
+      // jittery noise tied to exactly where within the hit area the
+      // pointer landed.
+      const dx = skill.x - VIEWBOX_CENTER.x;
+      const dy = skill.y - VIEWBOX_CENTER.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const magnitude = HOVER_LIFT_PX / scaleRef.current;
+      rawHoverX.set((dx / length) * magnitude);
+      rawHoverY.set((dy / length) * magnitude);
+    }, 55);
   };
 
   const handleLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
     // hoveredId is deliberately left as-is: the offset springs back to 0,
     // which renders identically to "not hovered" for whatever node it
     // still points at, and clearing it immediately would cut the ease-out
@@ -321,6 +351,7 @@ export function SkillConstellation() {
                 skill={skill}
                 isSelected={isSelected}
                 isDimmed={isDimmed}
+                isHighlighted={selectedId !== null && !isDimmed}
                 isHovered={skill.id === hoveredId}
                 hoverOffsetX={hoverOffsetX}
                 hoverOffsetY={hoverOffsetY}

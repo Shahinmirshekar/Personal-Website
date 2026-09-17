@@ -22,9 +22,10 @@ const GROUP_DIRECTION: Record<SkillItem["group"], { x: number; y: number }> = {
 // out — but a straight-down arm reads as much longer than a sideways one on
 // a page that's meant to be scrolled, not scanned side to side. Pulling the
 // bottom arm in specifically keeps the four-cluster "diamond" from reading
-// as one long tail hanging off the bottom.
+// as one long tail hanging off the bottom. Analytics (by far the largest
+// group) is pulled in too, so its arm doesn't dominate the other three.
 const GROUP_DISTANCE_SCALE: Record<SkillItem["group"], number> = {
-  analytics: 1,
+  analytics: 0.78,
   marketing: 1,
   design: 0.72,
   leadership: 1,
