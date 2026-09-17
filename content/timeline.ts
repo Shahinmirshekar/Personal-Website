@@ -13,99 +13,126 @@ export const chapters: { id: ChapterId; label: string }[] = [
 ];
 
 /**
- * Career timeline data. Known facts (Pace MBA, Asentech start date, Khooneh
- * numbers) come directly from the brief. Everything about the pre-U.S.
- * chapter — employers, titles, exact years — is marked `isPlaceholder` and
- * must be filled in before launch; see README "Information still needed".
+ * Career timeline data, sourced from Shahin's resume and the Khooneh/Asentech
+ * facts confirmed directly. The "moving to the U.S." date is not stated
+ * anywhere in the source material — it's inferred from the gap between the
+ * Tehran roles ending June 2021 and graduate study starting in Pittsburgh
+ * that August, and is labeled as an inference rather than presented as a
+ * confirmed date. Nothing else here is invented.
  */
 export const timeline: TimelineMilestone[] = [
   {
-    id: "early-foundation",
+    id: "foundation-engineering",
     chapter: "foundation",
     era: "pre-us",
-    dateLabel: "PLACEHOLDER — early years, exact dates needed",
-    title: "An early eye for design and visual communication",
+    dateLabel: "Oct 2010 – Jan 2018",
+    title: "A systems engineer's foundation",
+    organization: "Azad University of Tehran North Branch, Tehran, Iran",
     summary:
-      "A foundation in design and visual communication, and an early lesson in how presentation shapes comprehension.",
+      "Before design or marketing entered the picture, the foundation was industrial engineering — a formal, methodical way of thinking about complex systems that would later underpin every dashboard and KPI tree.",
     details: [
-      "PLACEHOLDER — name of first employer / program",
-      "PLACEHOLDER — job title(s) held during this period",
-      "Learned that how information is presented changes whether it is understood.",
+      "Bachelor of Science in Industrial Engineering — System Analysis (Oct 2010 – Jan 2015)",
+      "Master of Science in Industrial Engineering — System Optimization (Oct 2015 – Jan 2018)",
     ],
-    isPlaceholder: true,
+    isEducation: true,
     visual: "grid",
   },
   {
-    id: "design-chapter",
-    chapter: "design",
-    era: "pre-us",
-    dateLabel: "PLACEHOLDER — dates needed",
-    title: "Design taught me how people see",
-    summary:
-      "Grids, hierarchy, and storytelling — the visual grammar that later became the foundation for dashboard and information design.",
-    details: [
-      "PLACEHOLDER — specific design projects or roles",
-      "Visual hierarchy, layout systems, and attention to presentation",
-    ],
-    isPlaceholder: true,
-    visual: "grid",
-  },
-  {
-    id: "marketing-chapter",
+    id: "marketing-shadzi",
     chapter: "marketing",
     era: "pre-us",
-    dateLabel: "PLACEHOLDER — dates needed",
-    title: "Marketing taught me why people act",
+    dateLabel: "Feb 2019 – Dec 2019",
+    title: "Digital Marketing Manager",
+    organization: "Shadzi App, Tehran, Iran",
     summary:
-      "A growing interest in audience behavior — campaigns became less about output and more about understanding who they moved, and why.",
+      "The first hands-on marketing role — growing an app's audience from nothing, using research and content strategy instead of a media budget.",
     details: [
-      "PLACEHOLDER — specific marketing employer(s) / campaigns",
-      "Audience thinking, messaging, and early curiosity about what actually drives response",
+      "Grew brand awareness from 0 to 6,000 followers through market research and targeted content strategy",
+      "Added 2,000 new followers in two months, entirely organic with zero paid budget",
     ],
-    isPlaceholder: true,
     visual: "funnel",
   },
   {
-    id: "statistics-chapter",
+    id: "design-inverse",
+    chapter: "design",
+    era: "pre-us",
+    dateLabel: "Dec 2019 – Jun 2021",
+    title: "Post-Graduation Degree in Graphic Design",
+    organization: "INVERSE School of Digital Art, Tehran, Iran",
+    summary:
+      "Formal training in visual design and communication — studied at the same time as running marketing and branding for Oro Gold Gallery, design and marketing quite literally side by side.",
+    isEducation: true,
+    visual: "grid",
+  },
+  {
+    id: "statistics-orogold",
     chapter: "statistics",
     era: "pre-us",
-    dateLabel: "PLACEHOLDER — dates needed",
-    title: "Statistics taught me how to test what is true",
+    dateLabel: "Dec 2019 – Jun 2021",
+    title: "Digital Marketing & Branding Manager",
+    organization: "Oro Gold Gallery, Tehran, Iran",
     summary:
-      "Creative intuition started to feel more powerful once it could be measured — the beginning of a shift from instinct to evidence.",
+      "Where creative marketing work started leaning on structured measurement — data governance and dashboards replaced gut instinct for the first time.",
     details: [
-      "Growing interest in measurement, patterns, and analytical thinking",
-      "The first bridge between creative work and commercial performance",
+      "Directed integrated marketing campaigns and A/B testing, leading a team of 8 to a 500% increase in sales within 12 months",
+      "Owned digital transformation, social media rollout, influencer partnerships, brand identity, and campaign analytics",
+      "Introduced data governance with custom dashboards and a 500-point process manual, lifting team efficiency by 25%",
     ],
-    isPlaceholder: true,
     visual: "chart",
   },
   {
     id: "moving-to-us",
     chapter: "united-states",
     era: "transition",
-    dateLabel: "PLACEHOLDER — exact year needed",
+    dateLabel: "Summer 2021 (inferred)",
     title: "Moving to the United States",
     summary:
-      "A new country. A broader perspective. A more integrated career. (Immigration-status details are intentionally kept off this public page.)",
-    isPlaceholder: true,
+      "A new country. A broader perspective. A more integrated career. (Immigration-status details are intentionally kept off this public page. This date isn't stated outright — it's inferred from the gap between the Tehran roles ending in June 2021 and graduate study starting in Pittsburgh that August.)",
     isTurningPoint: true,
     visual: "bridge",
   },
   {
-    id: "pace-mba",
+    id: "katz-ms",
     chapter: "graduate-studies",
     era: "us",
-    dateLabel: "Graduated December 2025",
-    title: "Dual MBA — Pace University, Lubin School of Business",
+    dateLabel: "Aug 2021 – Dec 2022",
+    title: "Master of Science in Marketing Science & Business Analytics (STEM)",
+    organization: "Katz Graduate School of Business, University of Pittsburgh",
     summary:
-      "Investment Management and Business Analytics, studied as two parallel streams that converge into one discipline: strategic decision-making.",
-    details: [
-      "Dual MBA in Investment Management and Business Analytics",
-      "GPA: 3.94 / 4.0",
-      "STEM-designated business analytics coursework",
-    ],
+      "Two disciplines, one degree — marketing and analytics studied side by side, formalizing years of self-taught instinct into a rigorous, STEM-designated curriculum.",
+    isEducation: true,
     visual: "dual-stream",
+  },
+  {
+    id: "pitt-consultant",
+    chapter: "graduate-studies",
+    era: "us",
+    dateLabel: "Feb 2022 – Jan 2024",
+    title: "Communications Consultant & Digital Marketing Specialist (Part-time)",
+    organization: "University of Pittsburgh, Swanson School of Engineering",
+    summary:
+      "Applied the coursework immediately — building the data and journey-mapping infrastructure the Career Development Center still runs on.",
+    details: [
+      "Designed a database tracking alumni career outcomes so the Career Development Center could measure its own performance",
+      "Designed an interactive customer journey map used by 1,000+ students, drawing 5,000 page views a week and lifting engagement 150%",
+    ],
+    visual: "network",
+  },
+  {
+    id: "ppg-intern",
+    chapter: "graduate-studies",
+    era: "us",
+    dateLabel: "May 2022 – Aug 2022",
+    title: "Digital Marketing Analyst Intern",
+    organization: "PPG, Pittsburgh, PA",
+    summary:
+      "A concentrated season in paid-media measurement — Google Ads, A/B testing, and dashboards built for product managers, not marketers.",
+    details: [
+      "Ran data-driven Google Ads strategies that lifted Quality Scores by 15% through bid modification",
+      "Conducted A/B testing and modeled campaign effectiveness across sales touchpoints to inform regional strategy",
+      "Built Google Looker Studio dashboards giving product managers unified KPI visibility",
+    ],
+    visual: "dashboard",
   },
   {
     id: "asentech-analyst",
@@ -113,14 +140,15 @@ export const timeline: TimelineMilestone[] = [
     era: "us",
     dateLabel: "Since July 20, 2023",
     title: "Data & Insights Analyst — Asentech",
+    organization: "Asentech LLC, Somerville, NJ",
     summary:
-      "Pharmaceutical advanced analytics: turning claims, CRM, and digital engagement data into executive dashboards and decisions.",
+      "Pharmaceutical advanced analytics: leading the Advanced Analytics workstream and turning claims, CRM, and digital engagement data into executive dashboards and decisions.",
     details: [
-      "Advanced analytics ownership across marketing and commercial questions",
-      "Omnichannel attribution, claims and CRM integration",
-      "Power BI dashboard development, SQL, data modeling, and DAX",
-      "KPI definition, HCP engagement analysis, and segmentation",
-      "Executive-ready storytelling that turns findings into recommendations",
+      "Lead the Advanced Analytics workstream, managing a team of analysts delivering tailored dashboards for pharmaceutical and healthcare leadership",
+      "Collaborated with the technical team to design a GenAI-powered chat assistant on top of the customer database, improving data accessibility",
+      "Built and maintain interactive dashboards in Power BI, Looker Studio, and Tableau for stakeholders across the business",
+      "Analyze marketing, sales, EMR/EHR, and third-party claims data with statistical methods, contributing to strategic decisions with 90%+ accuracy",
+      "Partnered with data engineers to automate end-to-end ETL pipelines in SQL and Python, cutting report-generation time by 70%",
     ],
     visual: "dashboard",
   },

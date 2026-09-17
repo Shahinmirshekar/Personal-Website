@@ -38,6 +38,12 @@ export interface TimelineMilestone {
     | "horizon"
     | "dual-stream";
   isTurningPoint?: boolean;
+  /** Marks a degree/credential milestone so the /resume view can list it
+   * under Education rather than Experience. */
+  isEducation?: boolean;
+  /** Employer or school name, kept separate from the narrative title so the
+   * /resume view can render conventional "Title — Organization" headings. */
+  organization?: string;
 }
 
 export interface SkillItem {

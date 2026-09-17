@@ -19,7 +19,12 @@ export const skills: SkillItem[] = [
   { id: "kpi-architecture", label: "KPI Architecture", group: "analytics", relatedTo: ["power-bi", "executive-communication", "problem-framing"] },
   { id: "data-quality", label: "Data Quality", group: "analytics", relatedTo: ["sql", "power-query"] },
   { id: "omnichannel-attribution", label: "Omnichannel Attribution", group: "analytics", relatedTo: ["crm-claims", "funnel-analysis"] },
-  { id: "statistical-analysis", label: "Statistical Analysis", group: "analytics", relatedTo: ["behavioral-insights", "data-quality"] },
+  { id: "statistical-analysis", label: "Statistical Analysis", group: "analytics", relatedTo: ["behavioral-insights", "data-quality", "python", "r"] },
+  { id: "python", label: "Python", group: "analytics", relatedTo: ["sql", "statistical-analysis", "genai-prompt-engineering"] },
+  { id: "r", label: "R", group: "analytics", relatedTo: ["statistical-analysis", "python"] },
+  { id: "tableau", label: "Tableau", group: "analytics", relatedTo: ["power-bi", "dashboard-ux", "data-viz"] },
+  { id: "looker-studio", label: "Looker Studio", group: "analytics", relatedTo: ["tableau", "power-bi", "campaign-measurement"] },
+  { id: "genai-prompt-engineering", label: "GenAI Prompt Engineering", group: "analytics", relatedTo: ["python", "dashboard-dev", "data-quality"] },
 
   // Marketing & growth
   { id: "customer-journeys", label: "Customer Journeys", group: "marketing", relatedTo: ["crm-claims", "narrative-development"] },
@@ -30,6 +35,9 @@ export const skills: SkillItem[] = [
   { id: "marketing-performance", label: "Marketing Performance", group: "marketing", relatedTo: ["campaign-measurement", "commercial-strategy"] },
   { id: "behavioral-insights", label: "Behavioral Insights", group: "marketing", relatedTo: ["statistical-analysis", "audience-segmentation"] },
   { id: "commercial-strategy", label: "Commercial Strategy", group: "marketing", relatedTo: ["marketing-performance", "problem-framing"] },
+  { id: "ab-testing", label: "A/B Testing", group: "marketing", relatedTo: ["campaign-measurement", "funnel-analysis", "statistical-analysis"] },
+  { id: "google-ads", label: "Google Ads", group: "marketing", relatedTo: ["campaign-measurement", "ab-testing"] },
+  { id: "ga4", label: "Google Analytics (GA4)", group: "marketing", relatedTo: ["digital-engagement", "funnel-analysis"] },
 
   // Design & storytelling
   { id: "information-design", label: "Information Design", group: "design", relatedTo: ["data-viz", "simplifying-complexity"] },

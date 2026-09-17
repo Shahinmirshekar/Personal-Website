@@ -82,6 +82,9 @@ export function TimelineMilestone({ milestone, side, onEnter }: Props) {
           <h3 className="font-display text-xl font-medium leading-snug text-soft-white sm:text-2xl">
             {milestone.title}
           </h3>
+          {milestone.organization && (
+            <p className="mt-1 text-sm font-medium text-royal-300">{milestone.organization}</p>
+          )}
           <p className="mt-3 text-pretty text-sm leading-relaxed text-light-gray sm:text-base">
             {milestone.summary}
           </p>

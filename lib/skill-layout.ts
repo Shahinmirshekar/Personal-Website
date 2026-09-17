@@ -10,11 +10,12 @@ export interface PositionedSkill extends SkillItem {
   labelDy: number;
 }
 
-const GROUP_CENTERS: Record<SkillItem["group"], { x: number; y: number }> = {
-  analytics: { x: 100, y: 10 },
-  marketing: { x: 190, y: 100 },
-  design: { x: 100, y: 190 },
-  leadership: { x: 10, y: 100 },
+const CENTER = { x: 100, y: 100 };
+const GROUP_DIRECTION: Record<SkillItem["group"], { x: number; y: number }> = {
+  analytics: { x: 0, y: -1 },
+  marketing: { x: 1, y: 0 },
+  design: { x: 0, y: 1 },
+  leadership: { x: -1, y: 0 },
 };
 
 export const GROUP_COLOR: Record<SkillItem["group"], string> = {
@@ -42,11 +43,15 @@ export function computeSkillLayout(): PositionedSkill[] {
   const seen: Record<string, number> = {};
 
   return skills.map((skill) => {
-    const center = GROUP_CENTERS[skill.group];
     const count = counts[skill.group];
+    // Bigger groups sit further from the shared center AND get a wider ring
+    // of their own, so a 18-skill cluster doesn't crowd into an 8-skill one.
+    const distance = 70 + count * 3;
+    const direction = GROUP_DIRECTION[skill.group];
+    const center = { x: CENTER.x + direction.x * distance, y: CENTER.y + direction.y * distance };
     const i = seen[skill.group] ?? 0;
     seen[skill.group] = i + 1;
-    const radius = 12 + count * 1.8;
+    const radius = 10 + count * 1.6;
     const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
     return {
       ...skill,

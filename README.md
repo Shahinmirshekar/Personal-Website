@@ -48,24 +48,25 @@ lib/                  Small hooks/utilities (motion variants, reduced-motion, sc
 | `content/work-os.ts` | The "How I Work" operating loop steps and trait list |
 | `content/intersection.ts` | The Design/Marketing/Analytics lens copy and decision-intelligence steps |
 | `content/translation.ts` | The one finding shown in three languages |
-| `content/contact.ts` | LinkedIn / email / résumé / "discuss an opportunity" links |
+| `content/contact.ts` | LinkedIn / email / résumé / publications / "discuss an opportunity" links |
+| `content/credentials.ts` | Certifications, awards, and the fuller tool list shown on `/resume` |
 
-A milestone or link with `isPlaceholder: true` renders a small red "editable placeholder" badge on the live site and prints as "TBD" on the résumé view — so nothing fabricated is silently presented as fact. Clear the flag once the real value is filled in.
+A milestone or link with `isPlaceholder: true` renders a small red "editable placeholder" badge on the live site — so nothing fabricated is silently presented as fact. None are currently set (see "Information still needed" below for what's left), but the mechanism stays in place for any future unconfirmed detail.
 
 Content is intentionally kept as plain TypeScript objects (not a CMS) so it's simple to edit directly and stays type-checked against `content/types.ts`.
 
 ## Information still needed from Shahin
 
-The site is fully built and functional, but the pieces below are explicitly marked as placeholders and should be filled in before launch:
+Most of the career content was filled in from Shahin's résumé (`Shahin_Mirshekari_Resume_-_Pharma.docx`) and is now real — including pre-U.S. employers/titles/dates (Azad University, INVERSE School of Digital Art, Shadzi App, Oro Gold Gallery), the Katz MS at Pitt, PPG and Pitt-consulting roles, LinkedIn, email, and a Google Scholar publications link. What's left:
 
-- **Pre-U.S. career details** (`content/timeline.ts`): employer names, job titles, and exact dates for the early design, marketing, and statistics chapters.
-- **Exact year of moving to the United States** (`content/timeline.ts`, `moving-to-us` milestone).
-- **LinkedIn URL** (`content/profile.ts` → `sameAs`, and `content/contact.ts`).
-- **Personal email address** (`content/contact.ts` — currently `PLACEHOLDER@example.com`).
-- **Résumé file** — a real PDF at `public/` (currently linked as a placeholder path in `content/contact.ts`). The `/resume` route is a print-friendly HTML fallback generated from the same content data and works today, but a designed PDF can replace/supplement it.
+- **Exact move-to-U.S. date** (`content/timeline.ts`, `moving-to-us` milestone) — not stated in any source document. It's currently labeled "Summer 2021 (inferred)", deduced from the gap between the Tehran roles ending June 2021 and Pittsburgh graduate study starting that August. Replace with the real date if it differs.
+- **Downloadable résumé PDF** — `content/contact.ts`'s "Download Résumé" link currently points at the site's own `/resume` print view (fully functional, screen- and print-friendly) rather than a static file, because this environment's PDF conversion tooling isn't available. Add a real PDF to `public/` and repoint the link if a designed PDF is preferred over the HTML view.
 - **Professional headshot**, if one should be added (not currently used anywhere on the page).
-- **Real case-study screenshots** — only add these with explicit public-facing permission from the employer; the four case studies currently ship as anonymized text + abstract mini-visualizations with no real data.
+- **Real case-study screenshots** — only add these with explicit public-facing permission from Asentech; the four case studies currently ship as anonymized text + abstract mini-visualizations with no real client data.
 - **Favicon** — currently the default Next.js icon at `app/favicon.ico`; replace with a real mark.
+- **Phone number** — deliberately left off the public site (including `/resume`) to avoid spam exposure; add it to `content/profile.ts`/`content/contact.ts` if you want it public.
+
+Note: the site previously described a "Dual MBA at Pace University's Lubin School of Business" — that didn't match the résumé (which shows an MS in Marketing Science & Business Analytics from Pitt's Katz School) and has been replaced per your confirmation. If Pace is a real, separate credential (e.g. in progress), let me know and I'll add it back alongside Katz.
 
 ## Design & animation decisions
 
@@ -73,7 +74,7 @@ The site is fully built and functional, but the pieces below are explicitly mark
 - **Typography**: Fraunces (serif, expressive, used for headlines) paired with Inter (body/UI) and JetBrains Mono (data artifacts, kickers, code snippets) — an editorial/technical pairing rather than a single generic sans stack.
 - **The timeline is the spine.** A GSAP ScrollTrigger–driven line draws itself as the visitor scrolls (disabled/shown static under `prefers-reduced-motion`), milestones alternate left/right on desktop and collapse to one column on mobile, and the "Moving to the United States" milestone is visually distinguished as a turning point (larger crimson marker with a pulse ring). Pre-U.S. cards use a dashed, tactile border; post-U.S. cards use a solid, structured border — a subtle nod to "exploratory/design-led" evolving into "structured/analytical."
 - **The hero's generative background** is a from-scratch Canvas 2D sketch (not Three.js — not needed for this effect) that morphs a symmetric geometric point pattern into a looser network layout as the visitor scrolls through the hero, echoing the "design → data" throughline.
-- **No skill bars.** Skills render as a constellation (`SkillConstellation`) grouped by discipline with cross-discipline edges that highlight on selection — a deliberate, brief-mandated alternative to percentage bars. With 32 skills it's a dense graph by design; minor label crowding at certain viewport sizes is an accepted trade-off of that density rather than a bug.
+- **No skill bars.** Skills render as a constellation (`SkillConstellation`) grouped by discipline with cross-discipline edges that highlight on selection — a deliberate, brief-mandated alternative to percentage bars. Each of the 4 discipline clusters is placed and sized based on its own skill count (`lib/skill-layout.ts`), so a larger group (Analytics currently has 18) gets more room than a smaller one. With ~40 skills total it's a dense graph by design; minor label crowding at certain viewport sizes is an accepted trade-off of that density rather than a bug. The résumé's fuller tool list (Excel, SPSS, Adobe Analytics, etc.) lives in `content/credentials.ts` and appears only on `/resume`, to keep the interactive graph from getting even denser.
 - **Metrics animate once.** Counters (Asentech and Khooneh impact numbers) count up the first time they scroll into view and then hold — no re-triggering, no decorative looping numbers.
 - **Reduced motion is a first-class state, not an afterthought.** Every custom animation (`GenerativeCanvas`, `CareerTimeline`'s GSAP line, `CommunityNetwork`, `IdentityRotator`, count-up, ping rings) checks `usePrefersReducedMotion` (backed by `useSyncExternalStore` against `prefers-reduced-motion`) and renders a static, still-legible equivalent instead of skipping content.
 - **Case studies and fingerprint artifacts use only abstract/sample data.** No real client, patient, or proprietary figures appear anywhere on the page, per the brief's confidentiality requirement.

@@ -58,7 +58,7 @@ export function SkillConstellation() {
         whileInView="visible"
         viewport={revealViewport}
       >
-        <svg viewBox="-40 -40 280 280" className="h-full w-full overflow-visible">
+        <svg viewBox="-90 -90 380 380" className="h-full w-full overflow-visible">
           {edges.map(({ a, b }) => {
             const pa = byId.get(a);
             const pb = byId.get(b);
