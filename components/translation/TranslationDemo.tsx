@@ -16,7 +16,7 @@ export function TranslationDemo() {
         <p className="mt-2 text-sm leading-relaxed text-light-gray">{translationDemo.finding}</p>
       </div>
 
-      <div className="mt-6 flex justify-center gap-2">
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
         {translationDemo.layers.map((l, i) => (
           <button
             key={l.id}

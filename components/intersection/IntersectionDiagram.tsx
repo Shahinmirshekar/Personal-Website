@@ -6,9 +6,15 @@ import { intersectionLenses, decisionIntelligenceSteps } from "@/content/interse
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { editorialEase, revealViewport } from "@/lib/motion";
 
-const LENS_POSITION: Record<string, { top: string; left: string }> = {
+// `left: 60%` plus a fixed card width overflowed the viewport on narrow
+// phones — 60% of a ~360px mobile container plus a 208px-wide card runs
+// well past the screen edge, and that single overflowing element inflates
+// the *whole page's* layout viewport (not just this section), which is why
+// it showed up as a page-wide "have to zoom out" bug. Positioning this one
+// from the right instead keeps it pinned within bounds at any width.
+const LENS_POSITION: Record<string, { top: string; left?: string; right?: string }> = {
   design: { top: "4%", left: "4%" },
-  marketing: { top: "4%", left: "60%" },
+  marketing: { top: "4%", right: "4%" },
   analytics: { top: "68%", left: "32%" },
 };
 
@@ -105,7 +111,7 @@ export function IntersectionDiagram() {
               className={`absolute w-52 rounded-2xl border bg-charcoal-raised/80 p-4 backdrop-blur-sm transition-shadow ${LENS_COLOR[lens.id]} ${
                 isEmphasized ? "shadow-[0_0_0_1px_currentColor]" : ""
               }`}
-              style={{ top: pos.top, left: pos.left }}
+              style={{ top: pos.top, left: pos.left, right: pos.right }}
               variants={{
                 hidden: { opacity: 0, y: 20 },
                 visible: {
