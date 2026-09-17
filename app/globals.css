@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/*
+  Design tokens for Shahin Mirshekari's portfolio.
+  Single cinematic dark canvas (not light/dark toggle) — see README
+  "Design & animation decisions" for why: an editorial dark ground lets the
+  royal blue / dark red palette read as intentional rather than a SaaS theme.
+*/
+:root {
+  /* Iranian dark royal blue — dominant structural color */
+  --color-royal-950: #081b4b;
+  --color-royal-800: #122b6b;
+  --color-royal-600: #1f3f8f;
+  --color-royal-400: #4d6fce;
+  --color-royal-300: #8ba3e6;
+
+  /* Dark royal red — sparing, for milestones / turning points / active states */
+  --color-crimson-900: #7a1025;
+  --color-crimson-700: #9c1830;
+  --color-crimson-500: #c22c47;
+  --color-crimson-300: #e07d90;
+
+  /* Neutrals */
+  --color-charcoal: #0b0d12;
+  --color-charcoal-raised: #12141b;
+  --color-charcoal-surface: #181b24;
+  --color-warm-gray: #8a8d95;
+  --color-light-gray: #e5e7eb;
+  --color-soft-white: #f6f4ef;
+  --color-pure-white: #ffffff;
+
+  --background: var(--color-charcoal);
+  --foreground: var(--color-soft-white);
+
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-inter);
+  --font-data: var(--font-jetbrains);
+
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-quick: 0.35s;
+  --duration-slow: 0.9s;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-royal-950: var(--color-royal-950);
+  --color-royal-800: var(--color-royal-800);
+  --color-royal-600: var(--color-royal-600);
+  --color-royal-400: var(--color-royal-400);
+  --color-royal-300: var(--color-royal-300);
+
+  --color-crimson-900: var(--color-crimson-900);
+  --color-crimson-700: var(--color-crimson-700);
+  --color-crimson-500: var(--color-crimson-500);
+  --color-crimson-300: var(--color-crimson-300);
+
+  --color-charcoal: var(--color-charcoal);
+  --color-charcoal-raised: var(--color-charcoal-raised);
+  --color-charcoal-surface: var(--color-charcoal-surface);
+  --color-warm-gray: var(--color-warm-gray);
+  --color-light-gray: var(--color-light-gray);
+  --color-soft-white: var(--color-soft-white);
+  --color-pure-white: var(--color-pure-white);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-data: var(--font-data);
+}
+
+* {
+  border-color: var(--color-charcoal-surface);
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--color-crimson-700);
+  color: var(--color-soft-white);
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-royal-300);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Utility for content that should only be visible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduced-motion escape hatch for JS-driven animations. Components read
+   this via the `usePrefersReducedMotion` hook, but we also hard-disable
+   any residual CSS transitions/animations as a safety net. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .resume-print {
+    background: #ffffff !important;
+    color: #0b0d12 !important;
+  }
+}
