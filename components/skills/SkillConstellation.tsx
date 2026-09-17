@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { skills } from "@/content/skills";
 import { computeSkillLayout, GROUP_COLOR, GROUP_LABEL } from "@/lib/skill-layout";
@@ -16,8 +16,16 @@ const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + 
 // unit of cursor offset from center — small and capped, since this is a
 // shared full-graph parallax rather than a per-node effect (see README:
 // a per-node "flee the cursor" version made nodes unclickable).
-const PARALLAX_STRENGTH = 0.06;
-const PARALLAX_MAX = 12;
+const PARALLAX_STRENGTH = 0.03;
+// A `transform: translateX()` set on an element inside the SVG is in that
+// element's *local* user-coordinate space, not real screen pixels — it gets
+// scaled up again by however much the viewBox is stretched to fill the
+// rendered box. This constellation is full-bleed up to 1600px wide over a
+// 440-unit viewBox (~3.6x scale), so a cap expressed in raw viewBox units
+// was moving nodes ~3x further on screen than intended. Expressing the cap
+// in real CSS pixels and dividing by the live scale factor keeps the actual
+// on-screen movement small regardless of viewport width.
+const PARALLAX_MAX_PX = 5;
 // Off-canvas sentinel so the parallax settles back to 0 when idle.
 const IDLE = 9999;
 
@@ -46,15 +54,31 @@ export function SkillConstellation() {
   const svgRef = useRef<SVGSVGElement>(null);
   const mouseX = useMotionValue(IDLE);
   const mouseY = useMotionValue(IDLE);
+  // rendered SVG width ÷ viewBox width — how many screen px one viewBox unit
+  // covers. Read live (not just on resize) since it also depends on how the
+  // full-bleed container has actually settled at mount.
+  const scaleRef = useRef(1);
+
+  useEffect(() => {
+    const node = svgRef.current;
+    if (!node) return;
+    const measure = () => {
+      scaleRef.current = node.getBoundingClientRect().width / VIEWBOX.width || 1;
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   // The whole graph tilts toward the cursor as one rigid piece — alive and
   // reactive, but nothing ever moves relative to what you're pointing at,
   // so it never fights a click the way a per-node "flee" effect did.
   const rawParallaxX = useTransform(mouseX, (mx) =>
-    mx === IDLE ? 0 : clamp((mx - VIEWBOX_CENTER.x) * PARALLAX_STRENGTH, PARALLAX_MAX),
+    mx === IDLE ? 0 : clamp((mx - VIEWBOX_CENTER.x) * PARALLAX_STRENGTH, PARALLAX_MAX_PX / scaleRef.current),
   );
   const rawParallaxY = useTransform(mouseY, (my) =>
-    my === IDLE ? 0 : clamp((my - VIEWBOX_CENTER.y) * PARALLAX_STRENGTH, PARALLAX_MAX),
+    my === IDLE ? 0 : clamp((my - VIEWBOX_CENTER.y) * PARALLAX_STRENGTH, PARALLAX_MAX_PX / scaleRef.current),
   );
   const parallaxX = useSpring(rawParallaxX, { stiffness: 90, damping: 16, mass: 0.5 });
   const parallaxY = useSpring(rawParallaxY, { stiffness: 90, damping: 16, mass: 0.5 });
