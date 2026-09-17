@@ -151,18 +151,20 @@ function ConstellationNode({ skill, isSelected, isDimmed, isHighlighted, isHover
           would overlap neighbors' targets in the denser clusters. */}
       <circle r={7} fill="transparent" pointerEvents="all" />
       <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
-      {showLabel && (
-        <text
-          x={0}
-          y={skill.labelDy * 1.4}
-          textAnchor="middle"
-          className="font-data select-none"
-          fontSize={isSelected ? 5 : 3.9}
-          fill="#f6f4ef"
-        >
-          {skill.label}
-        </text>
-      )}
+      <motion.text
+        x={0}
+        y={skill.labelDy * 1.4}
+        textAnchor="middle"
+        className="font-data select-none"
+        fontSize={isSelected ? 5 : 3.9}
+        fill="#f6f4ef"
+        pointerEvents="none"
+        initial={false}
+        animate={{ opacity: showLabel ? 1 : 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        {skill.label}
+      </motion.text>
     </motion.g>
   );
 }
