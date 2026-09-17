@@ -1,22 +1,24 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { skills } from "@/content/skills";
 import { computeSkillLayout, GROUP_COLOR, GROUP_LABEL } from "@/lib/skill-layout";
 import { revealViewport } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import type { PositionedSkill } from "@/lib/skill-layout";
 
 const layout = computeSkillLayout();
 const byId = new Map(layout.map((s) => [s.id, s]));
 
 const VIEWBOX = { minX: -120, minY: -120, width: 440, height: 440 };
-// How far a node can be pushed, and how close the cursor has to be to push it —
-// both in viewBox units, matching learn-anything.xyz's node-graph feel.
-const REPULSE_RADIUS = 85;
-const REPULSE_STRENGTH = 32;
-// Off-canvas sentinel so every node's offset settles back to 0 when idle.
+const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + VIEWBOX.height / 2 };
+// How much the whole graph tilts toward the cursor, in viewBox units per
+// unit of cursor offset from center — small and capped, since this is a
+// shared full-graph parallax rather than a per-node effect (see README:
+// a per-node "flee the cursor" version made nodes unclickable).
+const PARALLAX_STRENGTH = 0.06;
+const PARALLAX_MAX = 12;
+// Off-canvas sentinel so the parallax settles back to 0 when idle.
 const IDLE = 9999;
 
 const edges = (() => {
@@ -33,79 +35,8 @@ const edges = (() => {
   return list;
 })();
 
-/** Pushes a node away from the cursor when it's within REPULSE_RADIUS,
- * easing back to rest via a spring once the cursor moves away or leaves. */
-function useRepulseOffset(
-  axis: "x" | "y",
-  nodeX: number,
-  nodeY: number,
-  mouseX: MotionValue<number>,
-  mouseY: MotionValue<number>,
-) {
-  const raw = useTransform([mouseX, mouseY], (latest) => {
-    const [mx, my] = latest as [number, number];
-    const dx = nodeX - mx;
-    const dy = nodeY - my;
-    const dist = Math.hypot(dx, dy);
-    if (dist >= REPULSE_RADIUS || dist < 0.01) return 0;
-    const force = (1 - dist / REPULSE_RADIUS) * REPULSE_STRENGTH;
-    return ((axis === "x" ? dx : dy) / dist) * force;
-  });
-  return useSpring(raw, { stiffness: 140, damping: 16, mass: 0.4 });
-}
-
-interface NodeProps {
-  skill: PositionedSkill;
-  isSelected: boolean;
-  isDimmed: boolean;
-  mouseX: MotionValue<number>;
-  mouseY: MotionValue<number>;
-  onSelect: () => void;
-}
-
-function ConstellationNode({ skill, isSelected, isDimmed, mouseX, mouseY, onSelect }: NodeProps) {
-  const offsetX = useRepulseOffset("x", skill.x, skill.y, mouseX, mouseY);
-  const offsetY = useRepulseOffset("y", skill.x, skill.y, mouseX, mouseY);
-
-  return (
-    <g
-      transform={`translate(${skill.x} ${skill.y})`}
-      className="cursor-pointer"
-      onClick={onSelect}
-      tabIndex={0}
-      role="button"
-      aria-pressed={isSelected}
-      aria-label={skill.label}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
-    >
-      {/* Invisible, stationary hit target. The visible dot below runs away
-          from the cursor by design — but the cursor itself sits right at
-          this base position when that happens, so keeping the clickable
-          area fixed here (instead of following the animated dot) is what
-          makes the node still selectable rather than an unclickable "chase
-          the button" toy. */}
-      <circle r={9} fill="transparent" pointerEvents="all" />
-      <motion.g style={{ translateX: offsetX, translateY: offsetY }}>
-        <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
-        <text
-          x={0}
-          y={skill.labelDy * 1.4}
-          textAnchor="middle"
-          className="font-data select-none"
-          fontSize={isSelected ? 5 : 3.9}
-          fill={isDimmed ? "#8a8d95" : "#f6f4ef"}
-          opacity={isDimmed ? 0.35 : 1}
-        >
-          {skill.label}
-        </text>
-      </motion.g>
-    </g>
-  );
+function clamp(value: number, max: number) {
+  return Math.max(-max, Math.min(max, value));
 }
 
 export function SkillConstellation() {
@@ -115,6 +46,18 @@ export function SkillConstellation() {
   const svgRef = useRef<SVGSVGElement>(null);
   const mouseX = useMotionValue(IDLE);
   const mouseY = useMotionValue(IDLE);
+
+  // The whole graph tilts toward the cursor as one rigid piece — alive and
+  // reactive, but nothing ever moves relative to what you're pointing at,
+  // so it never fights a click the way a per-node "flee" effect did.
+  const rawParallaxX = useTransform(mouseX, (mx) =>
+    mx === IDLE ? 0 : clamp((mx - VIEWBOX_CENTER.x) * PARALLAX_STRENGTH, PARALLAX_MAX),
+  );
+  const rawParallaxY = useTransform(mouseY, (my) =>
+    my === IDLE ? 0 : clamp((my - VIEWBOX_CENTER.y) * PARALLAX_STRENGTH, PARALLAX_MAX),
+  );
+  const parallaxX = useSpring(rawParallaxX, { stiffness: 90, damping: 16, mass: 0.5 });
+  const parallaxY = useSpring(rawParallaxY, { stiffness: 90, damping: 16, mass: 0.5 });
 
   const neighborIds = useMemo(() => {
     if (!selectedId) return new Set<string>();
@@ -170,37 +113,69 @@ export function SkillConstellation() {
           onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
         >
-          {edges.map(({ a, b }) => {
-            const pa = byId.get(a);
-            const pb = byId.get(b);
-            if (!pa || !pb) return null;
-            const isHighlighted = selectedId ? neighborIds.has(a) && neighborIds.has(b) : false;
-            const isDimmed = selectedId && !isHighlighted;
-            return (
-              <line
-                key={`${a}-${b}`}
-                x1={pa.x}
-                y1={pa.y}
-                x2={pb.x}
-                y2={pb.y}
-                stroke={isHighlighted ? "#f6f4ef" : "#4d6fce"}
-                strokeWidth={isHighlighted ? 0.9 : 0.4}
-                opacity={isDimmed ? 0.08 : isHighlighted ? 0.8 : 0.3}
-              />
-            );
-          })}
+          <motion.g style={{ translateX: parallaxX, translateY: parallaxY }}>
+            {edges.map(({ a, b }) => {
+              const pa = byId.get(a);
+              const pb = byId.get(b);
+              if (!pa || !pb) return null;
+              const isHighlighted = selectedId ? neighborIds.has(a) && neighborIds.has(b) : false;
+              const isDimmed = selectedId && !isHighlighted;
+              return (
+                <line
+                  key={`${a}-${b}`}
+                  x1={pa.x}
+                  y1={pa.y}
+                  x2={pb.x}
+                  y2={pb.y}
+                  stroke={isHighlighted ? "#f6f4ef" : "#4d6fce"}
+                  strokeWidth={isHighlighted ? 0.9 : 0.4}
+                  opacity={isDimmed ? 0.08 : isHighlighted ? 0.8 : 0.3}
+                />
+              );
+            })}
 
-          {layout.map((skill) => (
-            <ConstellationNode
-              key={skill.id}
-              skill={skill}
-              isSelected={skill.id === selectedId}
-              isDimmed={selectedId !== null && !neighborIds.has(skill.id)}
-              mouseX={mouseX}
-              mouseY={mouseY}
-              onSelect={() => setSelectedId(skill.id === selectedId ? null : skill.id)}
-            />
-          ))}
+            {layout.map((skill) => {
+              const isSelected = skill.id === selectedId;
+              const isDimmed = selectedId !== null && !neighborIds.has(skill.id);
+              return (
+                <g
+                  key={skill.id}
+                  transform={`translate(${skill.x} ${skill.y})`}
+                  className="skill-node cursor-pointer"
+                  onClick={() => setSelectedId(isSelected ? null : skill.id)}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={isSelected}
+                  aria-label={skill.label}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedId(isSelected ? null : skill.id);
+                    }
+                  }}
+                >
+                  {/* Generous invisible hit target — the visible dot is
+                      only ~3 viewBox units, too small to click reliably on
+                      its own. Moves together with the dot (same parallax
+                      group), so this is just normal hit-area padding, not a
+                      workaround for the animation. */}
+                  <circle r={9} fill="transparent" pointerEvents="all" />
+                  <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
+                  <text
+                    x={0}
+                    y={skill.labelDy * 1.4}
+                    textAnchor="middle"
+                    className="font-data select-none"
+                    fontSize={isSelected ? 5 : 3.9}
+                    fill={isDimmed ? "#8a8d95" : "#f6f4ef"}
+                    opacity={isDimmed ? 0.35 : 1}
+                  >
+                    {skill.label}
+                  </text>
+                </g>
+              );
+            })}
+          </motion.g>
         </svg>
       </motion.div>
 

@@ -110,6 +110,16 @@ button {
   border-radius: 2px;
 }
 
+/* Skill constellation nodes are small and densely packed, so the default
+   ring (a browser-drawn 5px `outline: auto` on click, since an SVG `<g>`
+   isn't a native control the UA reliably treats as focus-visible-only)
+   reads as oversized/heavy next to a ~3-unit dot. Styling `:focus` directly,
+   not just `:focus-visible`, so a mouse click gets the same thin ring. */
+.skill-node:focus {
+  outline: 1px solid var(--color-royal-300);
+  outline-offset: 1px;
+}
+
 /* Utility for content that should only be visible to screen readers */
 .sr-only {
   position: absolute;
