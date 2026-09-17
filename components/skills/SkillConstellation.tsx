@@ -83,6 +83,13 @@ function ConstellationNode({ skill, isSelected, isDimmed, mouseX, mouseY, onSele
         }
       }}
     >
+      {/* Invisible, stationary hit target. The visible dot below runs away
+          from the cursor by design — but the cursor itself sits right at
+          this base position when that happens, so keeping the clickable
+          area fixed here (instead of following the animated dot) is what
+          makes the node still selectable rather than an unclickable "chase
+          the button" toy. */}
+      <circle r={9} fill="transparent" pointerEvents="all" />
       <motion.g style={{ translateX: offsetX, translateY: offsetY }}>
         <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
         <text
