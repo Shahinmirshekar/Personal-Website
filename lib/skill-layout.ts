@@ -46,12 +46,12 @@ export function computeSkillLayout(): PositionedSkill[] {
     const count = counts[skill.group];
     // Bigger groups sit further from the shared center AND get a wider ring
     // of their own, so a 18-skill cluster doesn't crowd into an 8-skill one.
-    const distance = 70 + count * 3;
+    const distance = 84 + count * 3.6;
     const direction = GROUP_DIRECTION[skill.group];
     const center = { x: CENTER.x + direction.x * distance, y: CENTER.y + direction.y * distance };
     const i = seen[skill.group] ?? 0;
     seen[skill.group] = i + 1;
-    const radius = 10 + count * 1.6;
+    const radius = 13 + count * 2;
     const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
     return {
       ...skill,
