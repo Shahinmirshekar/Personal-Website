@@ -1,6 +1,7 @@
 import type { ChapterId, TimelineMilestone } from "./types";
+import { KHOONEH_VISIBLE } from "./khooneh";
 
-export const chapters: { id: ChapterId; label: string }[] = [
+const allChapters: { id: ChapterId; label: string }[] = [
   { id: "foundation", label: "Foundation" },
   { id: "design", label: "Design" },
   { id: "marketing", label: "Marketing" },
@@ -12,6 +13,12 @@ export const chapters: { id: ChapterId; label: string }[] = [
   { id: "whats-next", label: "What's Next" },
 ];
 
+// The "Leadership" chapter is Khooneh's — see content/khooneh.ts's
+// KHOONEH_VISIBLE switch, which hides it (and its milestone below) everywhere.
+export const chapters = KHOONEH_VISIBLE
+  ? allChapters
+  : allChapters.filter((c) => c.id !== "leadership");
+
 /**
  * Career timeline data, sourced from Shahin's resume and the Khooneh/Asentech
  * facts confirmed directly. The "moving to the U.S." date is not stated
@@ -20,7 +27,7 @@ export const chapters: { id: ChapterId; label: string }[] = [
  * that August, and is labeled as an inference rather than presented as a
  * confirmed date. Nothing else here is invented.
  */
-export const timeline: TimelineMilestone[] = [
+const allMilestones: TimelineMilestone[] = [
   {
     id: "foundation-engineering",
     chapter: "foundation",
@@ -179,3 +186,7 @@ export const timeline: TimelineMilestone[] = [
     visual: "horizon",
   },
 ];
+
+export const timeline = KHOONEH_VISIBLE
+  ? allMilestones
+  : allMilestones.filter((m) => m.chapter !== "leadership");

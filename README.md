@@ -44,7 +44,7 @@ lib/                  Small hooks/utilities (motion variants, reduced-motion, sc
 | `content/case-studies.ts` | The four anonymized analytics case studies |
 | `content/fingerprints.ts` | The "Digital Fingerprints" artifact wall (SQL/DAX/etc. + the thinking behind each) |
 | `content/metrics.ts` | Animated counters (Asentech impact, Khooneh impact) |
-| `content/khooneh.ts` | Khooneh summary and proof points |
+| `content/khooneh.ts` | Khooneh summary and proof points, plus the `KHOONEH_VISIBLE` switch (see below) |
 | `content/work-os.ts` | The "How I Work" operating loop steps and trait list |
 | `content/intersection.ts` | The Design/Marketing/Analytics lens copy and decision-intelligence steps |
 | `content/translation.ts` | The one finding shown in three languages |
@@ -54,6 +54,12 @@ lib/                  Small hooks/utilities (motion variants, reduced-motion, sc
 A milestone or link with `isPlaceholder: true` renders a small red "editable placeholder" badge on the live site — so nothing fabricated is silently presented as fact. None are currently set (see "Information still needed" below for what's left), but the mechanism stays in place for any future unconfirmed detail.
 
 Content is intentionally kept as plain TypeScript objects (not a CMS) so it's simple to edit directly and stays type-checked against `content/types.ts`.
+
+## Temporarily hidden: Khooneh
+
+By request, every Khooneh reference is currently hidden site-wide — the "Home is where you find your people" section on the main page, the "Founder — Khooneh" timeline milestone (and the "Leadership" chapter/nav entry it lived under), and the résumé's Leadership section. Nothing was deleted: it's all still in `content/khooneh.ts`, `content/timeline.ts`, and `content/metrics.ts`, gated behind one flag.
+
+**To bring it back:** flip `KHOONEH_VISIBLE` to `true` in `content/khooneh.ts`.
 
 ## Information still needed from Shahin
 

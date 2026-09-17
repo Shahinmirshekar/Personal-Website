@@ -1,3 +1,10 @@
+/**
+ * Single switch to hide every Khooneh reference across the site (main page
+ * section, timeline milestone, résumé Leadership section) without deleting
+ * any content — flip back to `true` to restore everything at once.
+ */
+export const KHOONEH_VISIBLE = false;
+
 export const khooneh = {
   name: "Khooneh",
   tagline: "Home is where you find your people.",

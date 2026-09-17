@@ -4,7 +4,7 @@ import { profile } from "@/content/profile";
 import { contactLinks } from "@/content/contact";
 import { timeline } from "@/content/timeline";
 import { skills } from "@/content/skills";
-import { khooneh } from "@/content/khooneh";
+import { khooneh, KHOONEH_VISIBLE } from "@/content/khooneh";
 import { certifications, awards, additionalTools } from "@/content/credentials";
 import { GROUP_LABEL } from "@/lib/skill-layout";
 import { PrintButton } from "@/components/resume/PrintButton";
@@ -114,13 +114,15 @@ export default function ResumePage() {
           ))}
         </section>
 
-        <section className="mt-8">
-          <h2 className="font-display text-lg font-medium text-royal-950">Leadership</h2>
-          <div className="mt-3">
-            <p className="font-medium">Founder — {khooneh.name}</p>
-            <p className="mt-1 text-sm text-charcoal/80">{khooneh.summary}</p>
-          </div>
-        </section>
+        {KHOONEH_VISIBLE && (
+          <section className="mt-8">
+            <h2 className="font-display text-lg font-medium text-royal-950">Leadership</h2>
+            <div className="mt-3">
+              <p className="font-medium">Founder — {khooneh.name}</p>
+              <p className="mt-1 text-sm text-charcoal/80">{khooneh.summary}</p>
+            </div>
+          </section>
+        )}
 
         <section className="mt-8">
           <h2 className="font-display text-lg font-medium text-royal-950">Skills</h2>

@@ -6,6 +6,7 @@ import { WorkSection } from "@/components/work/WorkSection";
 import { SkillsSection } from "@/components/skills/SkillsSection";
 import { HowIWorkSection } from "@/components/work-os/HowIWorkSection";
 import { KhoonehSection } from "@/components/khooneh/KhoonehSection";
+import { KHOONEH_VISIBLE } from "@/content/khooneh";
 import { TranslationSection } from "@/components/translation/TranslationSection";
 import { ManifestoSection } from "@/components/manifesto/ManifestoSection";
 import { ContactChapter } from "@/components/contact/ContactChapter";
@@ -21,7 +22,7 @@ export default function Home() {
         <WorkSection />
         <SkillsSection />
         <HowIWorkSection />
-        <KhoonehSection />
+        {KHOONEH_VISIBLE && <KhoonehSection />}
         <TranslationSection />
         <ManifestoSection />
       </main>
