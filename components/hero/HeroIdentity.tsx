@@ -41,11 +41,16 @@ export function HeroIdentity() {
         />
         <div className="absolute inset-0 bg-royal-950/25 mix-blend-multiply" />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/25 via-transparent to-charcoal/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/20 via-transparent to-transparent" />
       </div>
 
+      {/* This used to fade all the way to solid charcoal by the bottom of
+          the section — fine when there was only the canvas underneath, but
+          it was crushing the new photo's bottom half to black. Kept as a
+          much lighter vignette so it still grounds the canvas without
+          hiding the image. */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-royal-950/40 via-charcoal to-charcoal"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-royal-950/40 via-charcoal/25 to-charcoal/10"
         aria-hidden="true"
       />
       <GenerativeCanvas progress={progress} />
