@@ -54,12 +54,12 @@ export default function ResumePage() {
           <p className="mt-1 text-royal-800">{profile.currentTitle}</p>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal/70">
             {contactLinks
-              .filter((l) => l.id === "linkedin" || l.id === "email" || l.id === "publications")
+              .filter((l) => l.id === "linkedin" || l.id === "publications")
               .map((link) => (
                 <span key={link.id}>
                   {link.label}:{" "}
                   <a href={link.href} className="text-royal-800 underline underline-offset-2">
-                    {link.id === "email" ? link.href.replace(/^mailto:/, "") : link.href}
+                    {link.href}
                   </a>
                 </span>
               ))}

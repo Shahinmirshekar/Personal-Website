@@ -48,7 +48,7 @@ lib/                  Small hooks/utilities (motion variants, reduced-motion, sc
 | `content/work-os.ts` | The "How I Work" operating loop steps and trait list |
 | `content/intersection.ts` | The Design/Marketing/Analytics lens copy and decision-intelligence steps |
 | `content/translation.ts` | The one finding shown in three languages |
-| `content/contact.ts` | LinkedIn / email / résumé / publications / "discuss an opportunity" links |
+| `content/contact.ts` | LinkedIn / résumé / publications / "discuss an opportunity" links — deliberately no email, phone, or birth date anywhere in this file or the rest of the codebase |
 | `content/credentials.ts` | Certifications, awards, and the fuller tool list shown on `/resume` |
 
 A milestone or link with `isPlaceholder: true` renders a small red "editable placeholder" badge on the live site — so nothing fabricated is silently presented as fact. None are currently set (see "Information still needed" below for what's left), but the mechanism stays in place for any future unconfirmed detail.
@@ -57,14 +57,15 @@ Content is intentionally kept as plain TypeScript objects (not a CMS) so it's si
 
 ## Information still needed from Shahin
 
-Most of the career content was filled in from Shahin's résumé (`Shahin_Mirshekari_Resume_-_Pharma.docx`) and is now real — including pre-U.S. employers/titles/dates (Azad University, INVERSE School of Digital Art, Shadzi App, Oro Gold Gallery), the Katz MS at Pitt, PPG and Pitt-consulting roles, LinkedIn, email, and a Google Scholar publications link. What's left:
+Most of the career content was filled in from Shahin's résumé (`Shahin_Mirshekari_Resume_-_Pharma.docx`) and is now real — including pre-U.S. employers/titles/dates (Azad University, INVERSE School of Digital Art, Shadzi App, Oro Gold Gallery), the Katz MS at Pitt, PPG and Pitt-consulting roles, LinkedIn, and a Google Scholar publications link. What's left:
 
 - **Exact move-to-U.S. date** (`content/timeline.ts`, `moving-to-us` milestone) — not stated in any source document. It's currently labeled "Summer 2021 (inferred)", deduced from the gap between the Tehran roles ending June 2021 and Pittsburgh graduate study starting that August. Replace with the real date if it differs.
 - **Downloadable résumé PDF** — `content/contact.ts`'s "Download Résumé" link currently points at the site's own `/resume` print view (fully functional, screen- and print-friendly) rather than a static file, because this environment's PDF conversion tooling isn't available. Add a real PDF to `public/` and repoint the link if a designed PDF is preferred over the HTML view.
 - **Professional headshot**, if one should be added (not currently used anywhere on the page).
 - **Real case-study screenshots** — only add these with explicit public-facing permission from Asentech; the four case studies currently ship as anonymized text + abstract mini-visualizations with no real client data.
 - **Favicon** — currently the default Next.js icon at `app/favicon.ico`; replace with a real mark.
-- **Phone number** — deliberately left off the public site (including `/resume`) to avoid spam exposure; add it to `content/profile.ts`/`content/contact.ts` if you want it public.
+
+**Privacy note:** by explicit request, this codebase never contains an email address, phone number, or birth date — for Shahin or anyone else. "Email" and its mailto links have been removed from `content/contact.ts`; "Discuss an Opportunity" now routes to LinkedIn instead. If you want a contact-form or a specific email surfaced later, it should go through a form/service rather than a plaintext `mailto:` link.
 
 Note: the site previously described a "Dual MBA at Pace University's Lubin School of Business" — that didn't match the résumé (which shows an MS in Marketing Science & Business Analytics from Pitt's Katz School) and has been replaced per your confirmation. If Pace is a real, separate credential (e.g. in progress), let me know and I'll add it back alongside Katz.
 

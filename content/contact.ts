@@ -1,15 +1,15 @@
 import type { ContactLink } from "./types";
 
+/**
+ * No email, phone number, or birth date anywhere in this file (or anywhere
+ * else in the codebase) — deliberate, per privacy preference. "Discuss an
+ * Opportunity" routes to LinkedIn instead of a mailto link.
+ */
 export const contactLinks: ContactLink[] = [
   {
     id: "linkedin",
     label: "LinkedIn",
     href: "https://www.linkedin.com/in/shahinmirshekari/",
-  },
-  {
-    id: "email",
-    label: "Email",
-    href: "mailto:shaaheenmir@gmail.com",
   },
   {
     id: "resume",
@@ -21,7 +21,7 @@ export const contactLinks: ContactLink[] = [
   {
     id: "opportunity",
     label: "Discuss an Opportunity",
-    href: "mailto:shaaheenmir@gmail.com?subject=Let%27s%20talk",
+    href: "https://www.linkedin.com/in/shahinmirshekari/",
   },
   {
     id: "publications",
