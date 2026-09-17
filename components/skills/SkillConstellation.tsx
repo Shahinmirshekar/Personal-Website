@@ -83,7 +83,7 @@ function ConstellationNode({ skill, isSelected, isDimmed, mouseX, mouseY, onSele
         }
       }}
     >
-      <motion.g style={{ x: offsetX, y: offsetY }}>
+      <motion.g style={{ translateX: offsetX, translateY: offsetY }}>
         <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
         <text
           x={0}
@@ -146,8 +146,12 @@ export function SkillConstellation() {
         ))}
       </div>
 
+      {/* Full-bleed breakout: as wide as the viewport allows, ignoring the
+          page's usual max-w-6xl content column (capped so it doesn't become
+          absurdly tall — aspect-square ties height to width — on ultrawide
+          monitors). */}
       <motion.div
-        className="relative mx-auto aspect-square w-full max-w-5xl"
+        className="relative left-1/2 aspect-square w-screen max-w-[1600px] -translate-x-1/2 px-4 sm:px-8"
         initial="hidden"
         whileInView="visible"
         viewport={revealViewport}

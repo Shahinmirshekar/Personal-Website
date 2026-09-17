@@ -88,6 +88,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
+  /* Full-bleed sections (e.g. the skill constellation) use a `100vw`
+     breakout, which can overshoot the content box by the scrollbar's width
+     and cause a horizontal sliver — this is the standard guard for that. */
+  overflow-x: clip;
 }
 
 ::selection {
