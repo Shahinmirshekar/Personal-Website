@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { skills } from "@/content/skills";
-import { computeSkillLayout, GROUP_COLOR, GROUP_LABEL } from "@/lib/skill-layout";
+import { computeSkillLayout, GROUP_COLOR, GROUP_LABEL, type PositionedSkill } from "@/lib/skill-layout";
 import { revealViewport } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -12,22 +12,16 @@ const byId = new Map(layout.map((s) => [s.id, s]));
 
 const VIEWBOX = { minX: -120, minY: -120, width: 440, height: 440 };
 const VIEWBOX_CENTER = { x: VIEWBOX.minX + VIEWBOX.width / 2, y: VIEWBOX.minY + VIEWBOX.height / 2 };
-// How much the whole graph tilts toward the cursor, in viewBox units per
-// unit of cursor offset from center — small and capped, since this is a
-// shared full-graph parallax rather than a per-node effect (see README:
-// a per-node "flee the cursor" version made nodes unclickable).
-const PARALLAX_STRENGTH = 0.03;
 // A `transform: translateX()` set on an element inside the SVG is in that
 // element's *local* user-coordinate space, not real screen pixels — it gets
 // scaled up again by however much the viewBox is stretched to fill the
 // rendered box. This constellation is full-bleed up to 1600px wide over a
-// 440-unit viewBox (~3.6x scale), so a cap expressed in raw viewBox units
-// was moving nodes ~3x further on screen than intended. Expressing the cap
-// in real CSS pixels and dividing by the live scale factor keeps the actual
-// on-screen movement small regardless of viewport width.
-const PARALLAX_MAX_PX = 5;
-// Off-canvas sentinel so the parallax settles back to 0 when idle.
-const IDLE = 9999;
+// 440-unit viewBox (up to ~3.6x scale), so expressing the hover lift in raw
+// viewBox units would move it several times further on screen than
+// intended. Expressing it in real CSS pixels and dividing by the live scale
+// factor keeps the on-screen movement the same size regardless of viewport
+// width.
+const HOVER_LIFT_PX = 8;
 
 const edges = (() => {
   const seen = new Set<string>();
@@ -43,17 +37,110 @@ const edges = (() => {
   return list;
 })();
 
-function clamp(value: number, max: number) {
-  return Math.max(-max, Math.min(max, value));
+interface EdgeProps {
+  a: string;
+  b: string;
+  pa: PositionedSkill;
+  pb: PositionedSkill;
+  hoveredId: string | null;
+  hoverOffsetX: MotionValue<number>;
+  hoverOffsetY: MotionValue<number>;
+  isHighlighted: boolean;
+  isDimmed: boolean;
+}
+
+/** Its own component (not inlined in a .map) because it needs its own
+ * useTransform hooks — whichever endpoint is the currently-hovered node
+ * reads the shared hover offset, so the line stays visually attached to the
+ * dot as it lifts, and settles back with it on the same spring. */
+function ConstellationEdge({ a, b, pa, pb, hoveredId, hoverOffsetX, hoverOffsetY, isHighlighted, isDimmed }: EdgeProps) {
+  const x1 = useTransform(hoverOffsetX, (ox) => (a === hoveredId ? pa.x + ox : pa.x));
+  const y1 = useTransform(hoverOffsetY, (oy) => (a === hoveredId ? pa.y + oy : pa.y));
+  const x2 = useTransform(hoverOffsetX, (ox) => (b === hoveredId ? pb.x + ox : pb.x));
+  const y2 = useTransform(hoverOffsetY, (oy) => (b === hoveredId ? pb.y + oy : pb.y));
+
+  return (
+    <motion.line
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+      stroke={isHighlighted ? "#f6f4ef" : "#4d6fce"}
+      strokeWidth={isHighlighted ? 0.9 : 0.4}
+      opacity={isDimmed ? 0.08 : isHighlighted ? 0.8 : 0.3}
+    />
+  );
+}
+
+interface NodeProps {
+  skill: PositionedSkill;
+  isSelected: boolean;
+  isDimmed: boolean;
+  isHovered: boolean;
+  hoverOffsetX: MotionValue<number>;
+  hoverOffsetY: MotionValue<number>;
+  onSelect: () => void;
+  onEnter: () => void;
+  onLeave: () => void;
+}
+
+/** Its own component for the same reason as ConstellationEdge: a CSS
+ * `transform` set via `style` (which is how the hover offset is applied)
+ * completely replaces a plain SVG `transform="translate(...)"` attribute
+ * rather than composing with it — so the node's base position has to be
+ * folded into the same style-driven transform, which needs its own
+ * useTransform hook per node. */
+function ConstellationNode({ skill, isSelected, isDimmed, isHovered, hoverOffsetX, hoverOffsetY, onSelect, onEnter, onLeave }: NodeProps) {
+  const translateX = useTransform(hoverOffsetX, (ox) => skill.x + (isHovered ? ox : 0));
+  const translateY = useTransform(hoverOffsetY, (oy) => skill.y + (isHovered ? oy : 0));
+
+  return (
+    <motion.g
+      style={{ translateX, translateY }}
+      className="skill-node cursor-pointer"
+      onClick={onSelect}
+      onPointerEnter={onEnter}
+      onPointerLeave={onLeave}
+      onFocus={onEnter}
+      onBlur={onLeave}
+      tabIndex={0}
+      role="button"
+      aria-pressed={isSelected}
+      aria-label={skill.label}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+    >
+      {/* Generous invisible hit target — the visible dot is only ~3
+          viewBox units, too small to click reliably on its own. Moves
+          together with the dot (same transform), so this is just normal
+          hit-area padding. */}
+      <circle r={9} fill="transparent" pointerEvents="all" />
+      <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
+      <text
+        x={0}
+        y={skill.labelDy * 1.4}
+        textAnchor="middle"
+        className="font-data select-none"
+        fontSize={isSelected ? 5 : 3.9}
+        fill={isDimmed ? "#8a8d95" : "#f6f4ef"}
+        opacity={isDimmed ? 0.35 : 1}
+      >
+        {skill.label}
+      </text>
+    </motion.g>
+  );
 }
 
 export function SkillConstellation() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const selected = selectedId ? byId.get(selectedId) : null;
   const reducedMotion = usePrefersReducedMotion();
   const svgRef = useRef<SVGSVGElement>(null);
-  const mouseX = useMotionValue(IDLE);
-  const mouseY = useMotionValue(IDLE);
   // rendered SVG width ÷ viewBox width — how many screen px one viewBox unit
   // covers. Read live (not just on resize) since it also depends on how the
   // full-bleed container has actually settled at mount.
@@ -71,17 +158,14 @@ export function SkillConstellation() {
     return () => observer.disconnect();
   }, []);
 
-  // The whole graph tilts toward the cursor as one rigid piece — alive and
-  // reactive, but nothing ever moves relative to what you're pointing at,
-  // so it never fights a click the way a per-node "flee" effect did.
-  const rawParallaxX = useTransform(mouseX, (mx) =>
-    mx === IDLE ? 0 : clamp((mx - VIEWBOX_CENTER.x) * PARALLAX_STRENGTH, PARALLAX_MAX_PX / scaleRef.current),
-  );
-  const rawParallaxY = useTransform(mouseY, (my) =>
-    my === IDLE ? 0 : clamp((my - VIEWBOX_CENTER.y) * PARALLAX_STRENGTH, PARALLAX_MAX_PX / scaleRef.current),
-  );
-  const parallaxX = useSpring(rawParallaxX, { stiffness: 90, damping: 16, mass: 0.5 });
-  const parallaxY = useSpring(rawParallaxY, { stiffness: 90, damping: 16, mass: 0.5 });
+  // Shared by whichever single node is currently hovered, and by that
+  // node's edges (see ConstellationEdge) — only one node can be hovered at
+  // a time, so one pair of values is enough and keeps the dot and its
+  // lines moving in perfect sync rather than animating independently.
+  const rawHoverX = useMotionValue(0);
+  const rawHoverY = useMotionValue(0);
+  const hoverOffsetX = useSpring(rawHoverX, { stiffness: 300, damping: 22, mass: 0.4 });
+  const hoverOffsetY = useSpring(rawHoverY, { stiffness: 300, damping: 22, mass: 0.4 });
 
   const neighborIds = useMemo(() => {
     if (!selectedId) return new Set<string>();
@@ -93,16 +177,28 @@ export function SkillConstellation() {
     return set;
   }, [selectedId]);
 
-  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (reducedMotion || !svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    mouseX.set(((e.clientX - rect.left) / rect.width) * VIEWBOX.width + VIEWBOX.minX);
-    mouseY.set(((e.clientY - rect.top) / rect.height) * VIEWBOX.height + VIEWBOX.minY);
+  const handleEnter = (skill: PositionedSkill) => {
+    if (reducedMotion) return;
+    setHoveredId(skill.id);
+    // Lift the node outward, away from the graph's center, rather than
+    // toward wherever the cursor happens to have entered — a fixed,
+    // deliberate direction reads as an intentional "pop" instead of jittery
+    // noise tied to exactly where within the hit area the pointer landed.
+    const dx = skill.x - VIEWBOX_CENTER.x;
+    const dy = skill.y - VIEWBOX_CENTER.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const magnitude = HOVER_LIFT_PX / scaleRef.current;
+    rawHoverX.set((dx / length) * magnitude);
+    rawHoverY.set((dy / length) * magnitude);
   };
 
-  const handlePointerLeave = () => {
-    mouseX.set(IDLE);
-    mouseY.set(IDLE);
+  const handleLeave = () => {
+    // hoveredId is deliberately left as-is: the offset springs back to 0,
+    // which renders identically to "not hovered" for whatever node it
+    // still points at, and clearing it immediately would cut the ease-out
+    // short instead of letting the spring settle.
+    rawHoverX.set(0);
+    rawHoverY.set(0);
   };
 
   return (
@@ -134,72 +230,47 @@ export function SkillConstellation() {
           ref={svgRef}
           viewBox={`${VIEWBOX.minX} ${VIEWBOX.minY} ${VIEWBOX.width} ${VIEWBOX.height}`}
           className="h-full w-full overflow-visible"
-          onPointerMove={handlePointerMove}
-          onPointerLeave={handlePointerLeave}
         >
-          <motion.g style={{ translateX: parallaxX, translateY: parallaxY }}>
-            {edges.map(({ a, b }) => {
-              const pa = byId.get(a);
-              const pb = byId.get(b);
-              if (!pa || !pb) return null;
-              const isHighlighted = selectedId ? neighborIds.has(a) && neighborIds.has(b) : false;
-              const isDimmed = selectedId && !isHighlighted;
-              return (
-                <line
-                  key={`${a}-${b}`}
-                  x1={pa.x}
-                  y1={pa.y}
-                  x2={pb.x}
-                  y2={pb.y}
-                  stroke={isHighlighted ? "#f6f4ef" : "#4d6fce"}
-                  strokeWidth={isHighlighted ? 0.9 : 0.4}
-                  opacity={isDimmed ? 0.08 : isHighlighted ? 0.8 : 0.3}
-                />
-              );
-            })}
+          {edges.map(({ a, b }) => {
+            const pa = byId.get(a);
+            const pb = byId.get(b);
+            if (!pa || !pb) return null;
+            const isHighlighted = selectedId ? neighborIds.has(a) && neighborIds.has(b) : false;
+            const isDimmed = Boolean(selectedId && !isHighlighted);
+            return (
+              <ConstellationEdge
+                key={`${a}-${b}`}
+                a={a}
+                b={b}
+                pa={pa}
+                pb={pb}
+                hoveredId={hoveredId}
+                hoverOffsetX={hoverOffsetX}
+                hoverOffsetY={hoverOffsetY}
+                isHighlighted={isHighlighted}
+                isDimmed={isDimmed}
+              />
+            );
+          })}
 
-            {layout.map((skill) => {
-              const isSelected = skill.id === selectedId;
-              const isDimmed = selectedId !== null && !neighborIds.has(skill.id);
-              return (
-                <g
-                  key={skill.id}
-                  transform={`translate(${skill.x} ${skill.y})`}
-                  className="skill-node cursor-pointer"
-                  onClick={() => setSelectedId(isSelected ? null : skill.id)}
-                  tabIndex={0}
-                  role="button"
-                  aria-pressed={isSelected}
-                  aria-label={skill.label}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setSelectedId(isSelected ? null : skill.id);
-                    }
-                  }}
-                >
-                  {/* Generous invisible hit target — the visible dot is
-                      only ~3 viewBox units, too small to click reliably on
-                      its own. Moves together with the dot (same parallax
-                      group), so this is just normal hit-area padding, not a
-                      workaround for the animation. */}
-                  <circle r={9} fill="transparent" pointerEvents="all" />
-                  <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
-                  <text
-                    x={0}
-                    y={skill.labelDy * 1.4}
-                    textAnchor="middle"
-                    className="font-data select-none"
-                    fontSize={isSelected ? 5 : 3.9}
-                    fill={isDimmed ? "#8a8d95" : "#f6f4ef"}
-                    opacity={isDimmed ? 0.35 : 1}
-                  >
-                    {skill.label}
-                  </text>
-                </g>
-              );
-            })}
-          </motion.g>
+          {layout.map((skill) => {
+            const isSelected = skill.id === selectedId;
+            const isDimmed = selectedId !== null && !neighborIds.has(skill.id);
+            return (
+              <ConstellationNode
+                key={skill.id}
+                skill={skill}
+                isSelected={isSelected}
+                isDimmed={isDimmed}
+                isHovered={skill.id === hoveredId}
+                hoverOffsetX={hoverOffsetX}
+                hoverOffsetY={hoverOffsetY}
+                onSelect={() => setSelectedId(isSelected ? null : skill.id)}
+                onEnter={() => handleEnter(skill)}
+                onLeave={handleLeave}
+              />
+            );
+          })}
         </svg>
       </motion.div>
 
