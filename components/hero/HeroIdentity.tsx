@@ -23,23 +23,25 @@ export function HeroIdentity() {
       id="hero"
       className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden border-b border-charcoal-surface bg-charcoal"
     >
-      {/* Portrait, kept to the right so it sits behind the left-aligned copy
-          rather than under it. Blended rather than dropped in flat: a
-          royal-blue color-blend duotones the grayscale photo to match the
-          palette, and fades on every edge (not just a rectangle crop) so it
-          reads as part of the background rather than a pasted-in image. */}
+      {/* Summit photo, kept to the right so it sits behind the left-aligned
+          copy rather than under it — same image as the closing section, for
+          a "starts and ends on the same horizon" bookend. Darkened and
+          cooled (a royal-blue multiply pass) rather than left at full color
+          so its sunset doesn't fight the palette, and faded on every edge
+          (not just a rectangle crop) so it reads as part of the background
+          rather than a pasted-in image. */}
       <div className="pointer-events-none absolute inset-y-0 right-0 w-full sm:w-3/4 lg:w-1/2" aria-hidden="true">
         <Image
-          src="/images/hero-portrait.png"
+          src="/images/closing-summit.png"
           alt=""
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-[68%_35%] opacity-80"
+          className="object-cover object-[50%_55%]"
         />
-        <div className="absolute inset-0 bg-royal-600 mix-blend-color" />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-transparent to-charcoal" />
+        <div className="absolute inset-0 bg-royal-950/25 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/25 via-transparent to-charcoal/70" />
       </div>
 
       <div
