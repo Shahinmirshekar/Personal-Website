@@ -64,7 +64,10 @@ export function computeSkillLayout(): PositionedSkill[] {
     const center = { x: CENTER.x + direction.x * distance, y: CENTER.y + direction.y * distance };
     const i = seen[skill.group] ?? 0;
     seen[skill.group] = i + 1;
-    const radius = 13 + count * 2;
+    // Labels are visible all the time (not just on hover/selection), so
+    // adjacent nodes need real room for their text, not just their dots —
+    // wider than the previous hover-only version needed.
+    const radius = 21 + count * 3.2;
     const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
     return {
       ...skill,

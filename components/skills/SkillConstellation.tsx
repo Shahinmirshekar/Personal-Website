@@ -52,6 +52,33 @@ function hashSeed(id: string) {
   return hash;
 }
 
+// Labels are visible up front (not just on hover) so people know what's
+// clickable without exploring first — but a single unbroken line for
+// something like "Cross-Functional Collaboration" would be wider than the
+// room between neighboring nodes. Wrapping multi-word labels onto two
+// balanced lines keeps each line short enough to fit; single-word labels
+// (e.g. "Python") are already short and left alone.
+const WRAP_THRESHOLD = 11;
+
+function wrapLabel(label: string): string[] {
+  if (label.length <= WRAP_THRESHOLD) return [label];
+  const words = label.split(" ");
+  if (words.length === 1) return [label];
+
+  let bestSplit = 1;
+  let bestDiff = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const line1 = words.slice(0, i).join(" ");
+    const line2 = words.slice(i).join(" ");
+    const diff = Math.abs(line1.length - line2.length);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestSplit = i;
+    }
+  }
+  return [words.slice(0, bestSplit).join(" "), words.slice(bestSplit).join(" ")];
+}
+
 const edges = (() => {
   const seen = new Set<string>();
   const list: { a: string; b: string }[] = [];
@@ -134,12 +161,17 @@ interface NodeProps {
 function ConstellationNode({ skill, isSelected, isDimmed, isHighlighted, isHovered, hoverOffsetX, hoverOffsetY, float, onSelect, onEnter, onLeave }: NodeProps) {
   const translateX = useTransform([hoverOffsetX, float.x], ([ox, fx]: number[]) => skill.x + (isHovered ? ox : 0) + fx);
   const translateY = useTransform([hoverOffsetY, float.y], ([oy, fy]: number[]) => skill.y + (isHovered ? oy : 0) + fy);
-  // With ~50 skills on one graph, labels shown all the time overlap badly
-  // no matter how the nodes are spaced — full names are long relative to
-  // how close together nodes have to sit. Showing a label only once it's
-  // actually relevant (hovered, selected, or a neighbor of the selection)
-  // keeps the graph legible at rest and still makes every name discoverable.
-  const showLabel = isHovered || isSelected || isHighlighted;
+  // Labels stay visible (dimmer) at rest so people can see what's clickable
+  // without hovering first, and brighten to full opacity once relevant.
+  const isActive = isHovered || isSelected || isHighlighted;
+  const fontSize = isSelected ? 5 : 3.9;
+  const lines = wrapLabel(skill.label);
+  const lineHeight = fontSize * 1.15;
+  // A label placed below its dot (labelDy >= 0) grows further downward with
+  // each extra line; one placed above (labelDy < 0) has to grow upward
+  // instead, so the line closest to the dot stays where the original
+  // single-line position was tuned to sit.
+  const startY = skill.labelDy >= 0 ? skill.labelDy * 1.4 : skill.labelDy * 1.4 - (lines.length - 1) * lineHeight;
 
   return (
     <motion.g
@@ -170,17 +202,20 @@ function ConstellationNode({ skill, isSelected, isDimmed, isHighlighted, isHover
       <circle r={isSelected ? 4.4 : 3.1} fill={GROUP_COLOR[skill.group]} opacity={isDimmed ? 0.25 : 1} />
       <motion.text
         x={0}
-        y={skill.labelDy * 1.4}
         textAnchor="middle"
         className="font-data select-none"
-        fontSize={isSelected ? 5 : 3.9}
+        fontSize={fontSize}
         fill="#f6f4ef"
         pointerEvents="none"
         initial={false}
-        animate={{ opacity: showLabel ? 1 : 0 }}
+        animate={{ opacity: isDimmed ? 0.25 : isActive ? 1 : 0.62 }}
         transition={{ duration: 0.15 }}
       >
-        {skill.label}
+        {lines.map((line, i) => (
+          <tspan key={i} x={0} y={startY + i * lineHeight}>
+            {line}
+          </tspan>
+        ))}
       </motion.text>
     </motion.g>
   );
