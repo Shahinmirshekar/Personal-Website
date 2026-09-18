@@ -23,7 +23,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`relative mx-auto w-full max-w-6xl px-6 py-24 sm:px-8 md:py-32 ${
+      className={`relative mx-auto w-full max-w-6xl px-6 pt-24 sm:px-8 md:pt-32 ${
         chapterAnchor ? "scroll-mt-24" : ""
       } ${className}`}
     >
