@@ -19,8 +19,8 @@ export default function Home() {
         <HeroIdentity />
         <CareerTimeline />
         <IntersectionSection />
-        <WorkSection />
         <SkillsSection />
+        <WorkSection />
         <HowIWorkSection />
         {KHOONEH_VISIBLE && <KhoonehSection />}
         <TranslationSection />
