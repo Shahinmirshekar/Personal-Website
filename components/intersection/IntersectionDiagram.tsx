@@ -108,7 +108,7 @@ export function IntersectionDiagram() {
           return (
             <motion.div
               key={lens.id}
-              className={`absolute w-52 rounded-2xl border bg-charcoal-raised/80 p-4 backdrop-blur-sm transition-shadow ${LENS_COLOR[lens.id]} ${
+              className={`absolute w-28 rounded-2xl border bg-charcoal-raised/80 p-3 backdrop-blur-sm transition-shadow sm:w-52 sm:p-4 ${LENS_COLOR[lens.id]} ${
                 isEmphasized ? "shadow-[0_0_0_1px_currentColor]" : ""
               }`}
               style={{ top: pos.top, left: pos.left, right: pos.right }}
